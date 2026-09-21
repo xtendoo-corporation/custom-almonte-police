@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="demo_service_type" model="almonte.police.service.type">
+        <field name="name">Servicio extraordinario de prueba</field>
+        <field name="code">DEMO</field>
+        <field name="pricing_mode">fixed</field>
+        <field name="unit_price">75</field>
+    </record>
+</odoo>

@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="action_schedule" model="ir.actions.act_window">
+        <field name="name">Cuadrante</field>
+        <field name="res_model">almonte.police.schedule.assignment</field>
+        <field name="view_mode">list,calendar</field>
+        <field
+            name="view_id"
+            ref="almonte_police_extra_services.view_schedule_assignment_list"
+        />
+        <field
+            name="search_view_id"
+            ref="almonte_police_extra_services.view_schedule_assignment_search"
+        />
+    </record>
+    <record id="action_police_employees" model="ir.actions.act_window">
+        <field name="name">Agentes</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('police_category', '!=', False)]</field>
+    </record>
+    <record id="action_extra_services" model="ir.actions.act_window">
+        <field name="name">Servicios extraordinarios</field>
+        <field name="res_model">almonte.police.extra.service</field>
+        <field name="view_mode">list,form</field>
+        <field
+            name="view_id"
+            ref="almonte_police_extra_services.view_extra_service_list"
+        />
+        <field
+            name="search_view_id"
+            ref="almonte_police_extra_services.view_extra_service_search"
+        />
+    </record>
+    <record id="action_extra_services_list_view" model="ir.actions.act_window.view">
+        <field name="sequence">1</field>
+        <field name="view_mode">list</field>
+        <field
+            name="view_id"
+            ref="almonte_police_extra_services.view_extra_service_list"
+        />
+        <field
+            name="act_window_id"
+            ref="almonte_police_extra_services.action_extra_services"
+        />
+    </record>
+    <record id="action_extra_services_form_view" model="ir.actions.act_window.view">
+        <field name="sequence">2</field>
+        <field name="view_mode">form</field>
+        <field
+            name="view_id"
+            ref="almonte_police_extra_services.view_extra_service_form"
+        />
+        <field
+            name="act_window_id"
+            ref="almonte_police_extra_services.action_extra_services"
+        />
+    </record>
+    <record id="action_history" model="ir.actions.act_window">
+        <field name="name">Histórico de extras</field>
+        <field name="res_model">almonte.police.extra.service.history</field>
+        <field name="view_mode">list</field>
+    </record>
+    <record id="action_service_types" model="ir.actions.act_window">
+        <field name="name">Tipos de servicio y tarifas</field>
+        <field name="res_model">almonte.police.service.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_shift_types" model="ir.actions.act_window">
+        <field name="name">Tipos de turno</field>
+        <field name="res_model">almonte.police.shift.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_restrictions" model="ir.actions.act_window">
+        <field name="name">Restricciones entre turnos</field>
+        <field name="res_model">almonte.police.shift.restriction</field>
+        <field name="view_mode">list</field>
+    </record>
+    <record id="action_extra_summary" model="ir.actions.act_window">
+        <field name="name">Resumen económico por policía</field>
+        <field name="res_model">almonte.police.extra.summary</field>
+        <field name="view_mode">list,pivot</field>
+    </record>
+    <record id="action_working_schedules" model="ir.actions.act_window">
+        <field name="name">Calendarios laborales</field>
+        <field name="res_model">resource.calendar</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="resource.view_resource_calendar_tree" />
+        <field name="search_view_id" ref="resource.view_resource_calendar_search" />
+        <field
+            name="domain"
+        >['|', ('company_id', '=', False), ('company_id', 'in', allowed_company_ids)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Configura aquí los horarios laborales de referencia.
+            </p>
+            <p>
+                El cuadrante policial diario del módulo se gestiona desde
+                <strong>Cuadrante</strong>, no desde estos calendarios estándar.
+            </p>
+        </field>
+    </record>
+    <record id="action_extra_services_available" model="ir.actions.act_window">
+        <field name="name">Servicios disponibles</field>
+        <field name="res_model">almonte.police.extra.service</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_extra_service_list_agent" />
+        <field name="search_view_id" ref="view_extra_service_search_agent" />
+        <field name="domain">[('state', '=', 'published')]</field>
+        <field name="context">{'search_default_published': 1}</field>
+    </record>
+    <record id="action_my_signups" model="ir.actions.act_window">
+        <field name="name">Mis inscripciones</field>
+        <field name="res_model">almonte.police.extra.service.signup</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_signup_list_my" />
+        <field name="domain">[('employee_id.user_id', '=', uid)]</field>
+    </record>
+    <menuitem
+        id="menu_police_root"
+        name="Policía Local"
+        sequence="50"
+        groups="base.group_system,group_police_extra_agent,group_police_extra_user,group_police_extra_manager"
+    />
+    <menuitem
+        id="menu_extra_services_available"
+        name="Servicios disponibles"
+        parent="menu_police_root"
+        action="action_extra_services_available"
+        groups="group_police_extra_agent"
+        sequence="5"
+    />
+    <menuitem
+        id="menu_my_signups"
+        name="Mis inscripciones"
+        parent="menu_police_root"
+        action="action_my_signups"
+        groups="group_police_extra_agent"
+        sequence="6"
+    />
+    <menuitem
+        id="menu_police_employees"
+        name="Agentes"
+        parent="menu_police_root"
+        action="action_police_employees"
+        groups="group_police_extra_user,group_police_extra_manager"
+        sequence="10"
+    />
+    <menuitem
+        id="menu_schedule"
+        name="Cuadrante"
+        parent="menu_police_root"
+        action="action_schedule"
+        groups="group_police_extra_user,group_police_extra_manager"
+        sequence="20"
+    />
+    <menuitem
+        id="menu_extra_services"
+        name="Servicios extraordinarios"
+        parent="menu_police_root"
+        action="action_extra_services"
+        groups="group_police_extra_user,group_police_extra_manager"
+        sequence="30"
+    />
+    <menuitem
+        id="menu_history"
+        name="Histórico"
+        parent="menu_police_root"
+        action="action_history"
+        groups="group_police_extra_user,group_police_extra_manager"
+        sequence="40"
+    />
+    <menuitem
+        id="menu_reports"
+        name="Informes"
+        parent="menu_police_root"
+        action="action_extra_summary"
+        groups="group_police_extra_user,group_police_extra_manager"
+        sequence="50"
+    />
+    <menuitem
+        id="menu_working_schedules"
+        name="Calendarios laborales"
+        parent="menu_police_root"
+        action="action_working_schedules"
+        groups="group_police_extra_user,group_police_extra_manager"
+        sequence="60"
+    />
+    <menuitem
+        id="menu_configuration"
+        name="Configuración"
+        parent="menu_police_root"
+        groups="base.group_system,almonte_police_extra_services.group_police_extra_manager"
+        sequence="70"
+    />
+    <menuitem
+        id="menu_service_types"
+        name="Tipos de servicio y tarifas"
+        parent="menu_configuration"
+        action="action_service_types"
+    />
+    <menuitem
+        id="menu_shift_types"
+        name="Tipos de turno"
+        parent="menu_configuration"
+        action="action_shift_types"
+    />
+    <menuitem
+        id="menu_restrictions"
+        name="Restricciones entre turnos"
+        parent="menu_configuration"
+        action="action_restrictions"
+    />
+</odoo>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo noupdate="1">
+    <record id="shift_morning" model="almonte.police.shift.type">
+        <field name="name">Mañana</field>
+        <field name="code">M</field>
+        <field name="state_kind">work</field>
+        <field name="color">4</field>
+    </record>
+    <record id="shift_afternoon" model="almonte.police.shift.type">
+        <field name="name">Tarde</field>
+        <field name="code">T</field>
+        <field name="state_kind">work</field>
+        <field name="color">6</field>
+    </record>
+    <record id="shift_night" model="almonte.police.shift.type">
+        <field name="name">Noche</field>
+        <field name="code">N</field>
+        <field name="state_kind">work</field>
+        <field name="is_night">1</field>
+        <field name="color">9</field>
+    </record>
+    <record id="shift_rest" model="almonte.police.shift.type">
+        <field name="name">Descanso / libre</field>
+        <field name="code">D</field>
+        <field name="state_kind">rest</field>
+        <field name="color">10</field>
+    </record>
+    <record id="shift_vacation" model="almonte.police.shift.type">
+        <field name="name">Vacaciones</field>
+        <field name="code">VAC</field>
+        <field name="state_kind">absence</field>
+        <field name="color">3</field>
+    </record>
+    <record id="shift_sick_leave" model="almonte.police.shift.type">
+        <field name="name">Baja</field>
+        <field name="code">BAJA</field>
+        <field name="state_kind">absence</field>
+        <field name="color">1</field>
+    </record>
+    <record id="shift_personal_leave" model="almonte.police.shift.type">
+        <field name="name">Asuntos propios</field>
+        <field name="code">AP</field>
+        <field name="state_kind">absence</field>
+        <field name="color">2</field>
+    </record>
+    <record id="shift_union_hours" model="almonte.police.shift.type">
+        <field name="name">Horas sindicales</field>
+        <field name="code">HS</field>
+        <field name="state_kind">absence</field>
+        <field name="color">5</field>
+    </record>
+    <record id="shift_permission" model="almonte.police.shift.type">
+        <field name="name">Permiso</field>
+        <field name="code">PERMISO</field>
+        <field name="state_kind">absence</field>
+        <field name="color">2</field>
+    </record>
+    <record id="shift_compensation_day" model="almonte.police.shift.type">
+        <field name="name">Día de compensación</field>
+        <field name="code">COMP</field>
+        <field name="state_kind">absence</field>
+        <field name="color">2</field>
+    </record>
+    <record id="shift_seniority_day" model="almonte.police.shift.type">
+        <field name="name">Día de antigüedad</field>
+        <field name="code">ANT</field>
+        <field name="state_kind">absence</field>
+        <field name="color">2</field>
+    </record>
+    <record id="shift_compensation_hours" model="almonte.police.shift.type">
+        <field name="name">Horas de compensación</field>
+        <field name="code">HCOMP</field>
+        <field name="state_kind">absence</field>
+        <field name="color">2</field>
+    </record>
+    <record id="shift_family_leave" model="almonte.police.shift.type">
+        <field name="name">Ingreso familiar</field>
+        <field name="code">IF</field>
+        <field name="state_kind">absence</field>
+        <field name="color">2</field>
+    </record>
+    <record id="shift_free_disposition" model="almonte.police.shift.type">
+        <field name="name">Libre disposición</field>
+        <field name="code">LD</field>
+        <field name="state_kind">absence</field>
+        <field name="color">2</field>
+    </record>
+    <record id="shift_unknown_l" model="almonte.police.shift.type">
+        <field name="name">Libre</field>
+        <field name="code">L</field>
+        <field name="state_kind">rest</field>
+        <field name="color">10</field>
+    </record>
+    <record id="restriction_night_morning" model="almonte.police.shift.restriction">
+        <field name="previous_shift_id" ref="shift_night" />
+        <field name="required_shift_id" ref="shift_morning" />
+        <field name="reason">Descanso 24 horas tras noche</field>
+    </record>
+</odoo>

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_shift_type_list" model="ir.ui.view">
+        <field name="name">almonte.police.shift.type.list</field>
+        <field name="model">almonte.police.shift.type</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle" />
+                <field name="code" />
+                <field name="name" />
+                <field name="state_kind" />
+                <field name="is_night" />
+                <field name="color" widget="color_picker" />
+                <field name="active" />
+            </list>
+        </field>
+    </record>
+    <record id="view_shift_type_form" model="ir.ui.view">
+        <field name="name">almonte.police.shift.type.form</field>
+        <field name="model">almonte.police.shift.type</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name" />
+                        <field name="code" />
+                        <field name="sequence" />
+                        <field name="state_kind" />
+                        <field name="is_night" />
+                        <field name="color" widget="color_picker" />
+                        <field name="active" />
+                    </group>
+                    <field name="notes" />
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_schedule_assignment_list" model="ir.ui.view">
+        <field name="name">almonte.police.schedule.assignment.list</field>
+        <field name="model">almonte.police.schedule.assignment</field>
+        <field name="arch" type="xml">
+            <list
+                editable="bottom"
+                decoration-success="state_kind == 'rest'"
+                decoration-danger="state_kind == 'work'"
+                decoration-warning="state_kind == 'absence'"
+            >
+                <field name="date" />
+                <field name="employee_id" />
+                <field name="shift_type_id" />
+                <field name="state_kind" column_invisible="True" />
+                <field name="notes" />
+            </list>
+        </field>
+    </record>
+    <record id="view_schedule_assignment_form" model="ir.ui.view">
+        <field name="name">almonte.police.schedule.assignment.form</field>
+        <field name="model">almonte.police.schedule.assignment</field>
+        <field name="arch" type="xml">
+            <form string="Nueva asignación de cuadrante">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field
+                                name="name"
+                                placeholder="Nueva asignación de cuadrante"
+                            />
+                        </h1>
+                    </div>
+                    <group>
+                        <field name="employee_id" />
+                        <field name="date" />
+                        <field name="shift_type_id" />
+                        <field
+                            name="notes"
+                            placeholder="Anotaciones del servicio o turno"
+                        />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_schedule_assignment_calendar" model="ir.ui.view">
+        <field name="name">almonte.police.schedule.assignment.calendar</field>
+        <field name="model">almonte.police.schedule.assignment</field>
+        <field name="arch" type="xml">
+            <calendar
+                string="Cuadrante"
+                date_start="date"
+                mode="month"
+                color="calendar_color"
+                quick_create="1"
+                quick_create_view_id="%(view_schedule_assignment_form)d"
+            >
+                <field name="employee_id" filters="1" />
+                <field name="shift_type_id" filters="1" />
+                <field name="notes" />
+                <field name="employee_id" filters="1" invisible="1" />
+                <field name="shift_type_id" filters="1" invisible="1" />
+            </calendar>
+        </field>
+    </record>
+    <record id="view_schedule_assignment_search" model="ir.ui.view">
+        <field name="name">almonte.police.schedule.assignment.search</field>
+        <field name="model">almonte.police.schedule.assignment</field>
+        <field name="arch" type="xml">
+            <search string="Buscar en el cuadrante">
+                <field name="employee_id" string="Agente" />
+                <field name="shift_type_id" string="Turno / estado" />
+                <field name="date" string="Fecha" />
+                <separator />
+                <searchpanel>
+                    <field
+                        name="employee_id"
+                        string="Agente"
+                        select="one"
+                        enable_counters="1"
+                    />
+                        <field
+                        name="shift_type_id"
+                        string="Turno / estado"
+                        select="multi"
+                        enable_counters="1"
+                    />
+                    </searchpanel>
+                <filter
+                    name="group_by_employee"
+                    string="Agrupar por agente"
+                    context="{'group_by': 'employee_id'}"
+                />
+                <filter
+                    name="group_by_shift"
+                    string="Agrupar por turno"
+                    context="{'group_by': 'shift_type_id'}"
+                />
+            </search>
+        </field>
+    </record>
+    <record id="view_restriction_list" model="ir.ui.view">
+        <field name="name">almonte.police.shift.restriction.list</field>
+        <field name="model">almonte.police.shift.restriction</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="previous_shift_id" />
+                <field name="required_shift_id" />
+                <field name="reason" />
+                <field name="active" />
+            </list>
+        </field>
+    </record>
+</odoo>

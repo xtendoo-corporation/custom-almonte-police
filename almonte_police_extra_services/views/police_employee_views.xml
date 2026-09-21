@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_employee_form_police" model="ir.ui.view">
+        <field name="name">hr.employee.form.almonte.police</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='work_email']" position="after">
+                <field name="police_employee_id" />
+                <field name="police_dip" />
+                <field name="police_category" />
+                <field name="police_group" />
+            </xpath>
+            <xpath expr="//sheet" position="before">
+                <div
+                    class="alert alert-info"
+                    role="alert"
+                    invisible="not police_category or user_id"
+                    groups="almonte_police_extra_services.group_police_extra_manager"
+                >
+                    Este agente todavía no tiene un usuario Odoo. Puedes
+                    crearle uno para que acceda al autoservicio de la
+                    Policía Local.
+                    <button
+                        name="action_create_police_user"
+                        string="Crear usuario Odoo"
+                        type="object"
+                        class="btn-link"
+                    />
+                </div>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page
+                    name="police_schedule"
+                    string="Cuadrante"
+                    invisible="not police_category"
+                >
+                    <field name="police_schedule_assignment_ids">
+                        <list editable="bottom" default_order="date">
+                            <field name="date" />
+                            <field name="shift_type_id" />
+                            <field name="notes" />
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

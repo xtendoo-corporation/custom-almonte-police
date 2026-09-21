@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_service_type_list" model="ir.ui.view">
+        <field name="name">almonte.police.service.type.list</field>
+        <field name="model">almonte.police.service.type</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="code" />
+                <field name="name" />
+                <field name="pricing_mode" />
+                <field name="unit_price" />
+                <field name="currency_id" />
+                <field name="active" />
+            </list>
+        </field>
+    </record>
+    <record id="view_service_type_form" model="ir.ui.view">
+        <field name="name">almonte.police.service.type.form</field>
+        <field name="model">almonte.police.service.type</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name" />
+                        <field name="code" />
+                        <field name="pricing_mode" />
+                        <field name="unit_price" />
+                        <field name="currency_id" />
+                        <field name="active" />
+                    </group>
+                    <field name="notes" />
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_extra_service_list" model="ir.ui.view">
+        <field name="name">almonte.police.extra.service.list</field>
+        <field name="model">almonte.police.extra.service</field>
+        <field name="arch" type="xml">
+            <list decoration-success="state == 'assigned'">
+                <field name="name" />
+                <field name="service_date" />
+                <field name="service_type_id" />
+                <field name="required_shift_id" />
+                <field name="vacancies" />
+                <field name="state" widget="badge" />
+                <field name="total_amount" sum="Total" />
+            </list>
+        </field>
+    </record>
+    <record id="view_extra_service_form" model="ir.ui.view">
+        <field name="name">almonte.police.extra.service.form</field>
+        <field name="model">almonte.police.extra.service</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button
+                        name="action_publish"
+                        string="Publicar"
+                        type="object"
+                        class="btn-primary"
+                        invisible="state != 'draft'"
+                        groups="almonte_police_extra_services.group_police_extra_user"
+                    />
+                    <button
+                        name="action_assign"
+                        string="Adjudicar plazas"
+                        type="object"
+                        class="btn-primary"
+                        invisible="state not in ('published', 'assigned')"
+                        groups="almonte_police_extra_services.group_police_extra_user"
+                    />
+                    <button
+                        name="action_volunteer"
+                        string="Apuntarme como voluntario"
+                        type="object"
+                        class="btn-primary"
+                        invisible="not can_volunteer"
+                        groups="almonte_police_extra_services.group_police_extra_agent"
+                    />
+                    <field name="state" widget="statusbar" />
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" /></h1>
+                    </div>
+                    <field name="can_volunteer" invisible="1" />
+                    <group>
+                        <group>
+                            <field name="service_date" />
+                            <field name="service_type_id" />
+                            <field name="required_shift_id" />
+                            <field name="police_category" />
+                        </group>
+                        <group>
+                            <field name="vacancies" />
+                            <field name="hours" />
+                            <field name="department" />
+                            <field name="total_amount" />
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Inscritos">
+                            <field name="signup_ids">
+                                <list
+                                    decoration-success="state in ('assigned_free', 'assigned_double')"
+                                >
+                                    <field name="row_number" />
+                                    <field name="employee_id" />
+                                    <field name="current_shift_id" />
+                                    <field name="previous_shift_id" />
+                                    <field name="availability_status" />
+                                    <field name="accumulated_extra_days" />
+                                    <field name="priority_score" />
+                                    <field name="rank" />
+                                    <field name="amount" />
+                                    <field name="state" widget="badge" />
+                                    <button
+                                        name="action_open_employee_schedule"
+                                        string="Ver cuadrante"
+                                        type="object"
+                                        icon="fa-calendar"
+                                        class="btn-link"
+                                    />
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Observaciones">
+                            <field name="notes" />
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_extra_service_search" model="ir.ui.view">
+        <field name="name">almonte.police.extra.service.search</field>
+        <field name="model">almonte.police.extra.service</field>
+        <field name="arch" type="xml">
+            <search string="Buscar servicios extraordinarios">
+                <field name="name" string="Nº oferta" />
+                <field name="service_date" string="Fecha" />
+                <field name="service_type_id" string="Tipo de servicio" />
+                <field name="required_shift_id" string="Turno" />
+                <field name="state" string="Estado" />
+                <separator />
+                <filter
+                    name="published"
+                    string="Publicadas"
+                    domain="[('state', '=', 'published')]"
+                />
+                <filter
+                    name="assigned"
+                    string="Adjudicadas"
+                    domain="[('state', '=', 'assigned')]"
+                />
+            </search>
+        </field>
+    </record>
+    <record id="view_history_list" model="ir.ui.view">
+        <field name="name">almonte.police.extra.service.history.list</field>
+        <field name="model">almonte.police.extra.service.history</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="service_date" />
+                <field name="employee_id" />
+                <field name="service_id" />
+                <field name="service_type_id" />
+                <field name="days" />
+                <field name="hours" />
+                <field name="amount" />
+            </list>
+        </field>
+    </record>
+    <record id="view_extra_service_list_agent" model="ir.ui.view">
+        <field name="name">almonte.police.extra.service.list.agent</field>
+        <field name="model">almonte.police.extra.service</field>
+        <field name="arch" type="xml">
+            <list decoration-success="state == 'assigned'" create="0" delete="0">
+                <field name="name" />
+                <field name="service_date" />
+                <field name="service_type_id" />
+                <field name="required_shift_id" />
+                <field name="vacancies" />
+                <field name="state" widget="badge" />
+                <button
+                    name="action_volunteer"
+                    string="Apuntarme"
+                    type="object"
+                    icon="fa-hand-paper-o"
+                    invisible="not can_volunteer"
+                    class="btn-link"
+                />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_extra_service_search_agent" model="ir.ui.view">
+        <field name="name">almonte.police.extra.service.search.agent</field>
+        <field name="model">almonte.police.extra.service</field>
+        <field name="arch" type="xml">
+            <search string="Servicios extraordinarios disponibles">
+                <field name="name" string="Nº oferta" />
+                <field name="service_date" string="Fecha" />
+                <field name="service_type_id" string="Tipo de servicio" />
+                <field name="required_shift_id" string="Turno" />
+                <filter
+                    name="published"
+                    string="Publicadas"
+                    domain="[('state', '=', 'published')]"
+                />
+            </search>
+        </field>
+    </record>
+
+    <record id="view_signup_list_my" model="ir.ui.view">
+        <field name="name">almonte.police.extra.service.signup.list.my</field>
+        <field name="model">almonte.police.extra.service.signup</field>
+        <field name="arch" type="xml">
+            <list
+                decoration-success="state in ('assigned_free', 'assigned_double')"
+                decoration-muted="state in ('waiting_free', 'waiting_double')"
+                create="0"
+                edit="0"
+            >
+                <field name="service_id" />
+                <field name="availability_status" />
+                <field name="rank" />
+                <field name="amount" />
+                <field name="state" widget="badge" />
+                <button
+                    name="action_withdraw"
+                    string="Retirar"
+                    type="object"
+                    icon="fa-times"
+                    invisible="state in ('assigned_free', 'assigned_double', 'waiting_free', 'waiting_double')"
+                    class="btn-link"
+                    confirm="¿Seguro que quieres retirar tu inscripción?"
+                />
+            </list>
+        </field>
+    </record>
+</odoo>

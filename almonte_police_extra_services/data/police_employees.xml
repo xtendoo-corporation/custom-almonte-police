@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo noupdate="1">
+    <record id="employee_police_101" model="hr.employee">
+        <field name="name">Francisca</field>
+        <field name="police_employee_id">101</field>
+        <field name="police_dip">1</field>
+        <field name="police_category">inspector</field>
+        <field name="police_group">Jefatura</field>
+    </record>
+    <record id="employee_police_102" model="hr.employee">
+        <field name="name">Manuel</field>
+        <field name="police_employee_id">102</field>
+        <field name="police_dip">2</field>
+        <field name="police_category">subinspector</field>
+        <field name="police_group">Jefatura</field>
+    </record>
+    <record id="employee_police_103" model="hr.employee">
+        <field name="name">Juan</field>
+        <field name="police_employee_id">103</field>
+        <field name="police_dip">3</field>
+        <field name="police_category">officer</field>
+        <field name="police_group">Prommesas</field>
+    </record>
+    <record id="employee_police_104" model="hr.employee">
+        <field name="name">Diego</field>
+        <field name="police_employee_id">104</field>
+        <field name="police_dip">4</field>
+        <field name="police_category">officer</field>
+    </record>
+    <record id="employee_police_105" model="hr.employee">
+        <field name="name">Adrián</field>
+        <field name="police_employee_id">105</field>
+        <field name="police_dip">5</field>
+        <field name="police_category">officer</field>
+        <field name="police_group">Grupo 3</field>
+    </record>
+    <record id="employee_police_106" model="hr.employee">
+        <field name="name">Juan Rafael</field>
+        <field name="police_employee_id">106</field>
+        <field name="police_dip">6</field>
+        <field name="police_category">officer</field>
+        <field name="police_group">Grupo 2</field>
+    </record>
+    <record id="employee_police_107" model="hr.employee">
+        <field name="name">Matías</field>
+        <field name="police_employee_id">107</field>
+        <field name="police_dip">7</field>
+        <field name="police_category">officer</field>
+        <field name="police_group">Grupo 1</field>
+    </record>
+    <record id="employee_police_108" model="hr.employee">
+        <field name="name">Manuel 2</field>
+        <field name="police_employee_id">108</field>
+        <field name="police_dip">8</field>
+        <field name="police_category">officer</field>
+        <field name="police_group">Grupo 5</field>
+    </record>
+    <record id="employee_police_109" model="hr.employee">
+        <field name="name">Manuel 3</field>
+        <field name="police_employee_id">109</field>
+        <field name="police_dip">9</field>
+        <field name="police_category">organizational_officer</field>
+        <field name="police_group">Jefatura</field>
+    </record>
+    <record id="employee_police_110" model="hr.employee">
+        <field name="name">Julián</field>
+        <field name="police_employee_id">110</field>
+        <field name="police_dip">10</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Jefatura</field>
+    </record>
+    <record id="employee_police_111" model="hr.employee">
+        <field name="name">Rocío</field>
+        <field name="police_employee_id">111</field>
+        <field name="police_dip">11</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Prommesas</field>
+    </record>
+    <record id="employee_police_112" model="hr.employee">
+        <field name="name">Juan Jesús</field>
+        <field name="police_employee_id">112</field>
+        <field name="police_dip">12</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 5</field>
+    </record>
+    <record id="employee_police_113" model="hr.employee">
+        <field name="name">Jorge</field>
+        <field name="police_employee_id">113</field>
+        <field name="police_dip">13</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 3</field>
+    </record>
+    <record id="employee_police_114" model="hr.employee">
+        <field name="name">Maria José</field>
+        <field name="police_employee_id">114</field>
+        <field name="police_dip">14</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Jefatura</field>
+    </record>
+    <record id="employee_police_115" model="hr.employee">
+        <field name="name">Martín Francisco</field>
+        <field name="police_employee_id">115</field>
+        <field name="police_dip">15</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 6</field>
+    </record>
+    <record id="employee_police_116" model="hr.employee">
+        <field name="name">Bartolomé</field>
+        <field name="police_employee_id">116</field>
+        <field name="police_dip">16</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 4</field>
+    </record>
+    <record id="employee_police_117" model="hr.employee">
+        <field name="name">Miguel Ángel</field>
+        <field name="police_employee_id">117</field>
+        <field name="police_dip">17</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 1</field>
+    </record>
+    <record id="employee_police_118" model="hr.employee">
+        <field name="name">José</field>
+        <field name="police_employee_id">118</field>
+        <field name="police_dip">18</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 2</field>
+    </record>
+    <record id="employee_police_119" model="hr.employee">
+        <field name="name">Francisco José</field>
+        <field name="police_employee_id">119</field>
+        <field name="police_dip">19</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Jefatura</field>
+    </record>
+    <record id="employee_police_120" model="hr.employee">
+        <field name="name">Jose Antonio</field>
+        <field name="police_employee_id">120</field>
+        <field name="police_dip">20</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 5</field>
+    </record>
+    <record id="employee_police_121" model="hr.employee">
+        <field name="name">De la Torre</field>
+        <field name="police_employee_id">121</field>
+        <field name="police_dip">21</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 6</field>
+    </record>
+    <record id="employee_police_122" model="hr.employee">
+        <field name="name">Bartolomé 2</field>
+        <field name="police_employee_id">122</field>
+        <field name="police_dip">22</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 4</field>
+    </record>
+    <record id="employee_police_123" model="hr.employee">
+        <field name="name">Pedro</field>
+        <field name="police_employee_id">123</field>
+        <field name="police_dip">23</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 4</field>
+    </record>
+    <record id="employee_police_124" model="hr.employee">
+        <field name="name">José María</field>
+        <field name="police_employee_id">124</field>
+        <field name="police_dip">24</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Jefatura</field>
+    </record>
+    <record id="employee_police_125" model="hr.employee">
+        <field name="name">Antonio Manuel</field>
+        <field name="police_employee_id">125</field>
+        <field name="police_dip">25</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 5</field>
+    </record>
+    <record id="employee_police_126" model="hr.employee">
+        <field name="name">Daniel</field>
+        <field name="police_employee_id">126</field>
+        <field name="police_dip">26</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 4</field>
+    </record>
+    <record id="employee_police_127" model="hr.employee">
+        <field name="name">Marian</field>
+        <field name="police_employee_id">127</field>
+        <field name="police_dip">27</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 5</field>
+    </record>
+    <record id="employee_police_128" model="hr.employee">
+        <field name="name">Concepción</field>
+        <field name="police_employee_id">128</field>
+        <field name="police_dip">28</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 6</field>
+    </record>
+    <record id="employee_police_129" model="hr.employee">
+        <field name="name">Francisco</field>
+        <field name="police_employee_id">129</field>
+        <field name="police_dip">29</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 6</field>
+    </record>
+    <record id="employee_police_130" model="hr.employee">
+        <field name="name">Antonio</field>
+        <field name="police_employee_id">130</field>
+        <field name="police_dip">30</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 4</field>
+    </record>
+    <record id="employee_police_131" model="hr.employee">
+        <field name="name">Manuel Joaquín</field>
+        <field name="police_employee_id">131</field>
+        <field name="police_dip">31</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 5</field>
+    </record>
+    <record id="employee_police_132" model="hr.employee">
+        <field name="name">Juan Antonio</field>
+        <field name="police_employee_id">132</field>
+        <field name="police_dip">32</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 1</field>
+    </record>
+    <record id="employee_police_133" model="hr.employee">
+        <field name="name">Jose Manuel</field>
+        <field name="police_employee_id">133</field>
+        <field name="police_dip">33</field>
+        <field name="police_category">police</field>
+    </record>
+    <record id="employee_police_134" model="hr.employee">
+        <field name="name">José Antonio</field>
+        <field name="police_employee_id">134</field>
+        <field name="police_dip">34</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 1</field>
+    </record>
+    <record id="employee_police_135" model="hr.employee">
+        <field name="name">Yolanda</field>
+        <field name="police_employee_id">135</field>
+        <field name="police_dip">35</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 4</field>
+    </record>
+    <record id="employee_police_136" model="hr.employee">
+        <field name="name">Narciso</field>
+        <field name="police_employee_id">136</field>
+        <field name="police_dip">36</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 1</field>
+    </record>
+    <record id="employee_police_137" model="hr.employee">
+        <field name="name">José Díaz</field>
+        <field name="police_employee_id">137</field>
+        <field name="police_dip">37</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 6</field>
+    </record>
+    <record id="employee_police_138" model="hr.employee">
+        <field name="name">Fernando</field>
+        <field name="police_employee_id">138</field>
+        <field name="police_dip">38</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 4</field>
+    </record>
+    <record id="employee_police_139" model="hr.employee">
+        <field name="name">Juan</field>
+        <field name="police_employee_id">139</field>
+        <field name="police_dip">39</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 5</field>
+    </record>
+    <record id="employee_police_140" model="hr.employee">
+        <field name="name">Gonzalez</field>
+        <field name="police_employee_id">140</field>
+        <field name="police_dip">40</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 3</field>
+    </record>
+    <record id="employee_police_141" model="hr.employee">
+        <field name="name">Diego José</field>
+        <field name="police_employee_id">141</field>
+        <field name="police_dip">41</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 3</field>
+    </record>
+    <record id="employee_police_142" model="hr.employee">
+        <field name="name">Morales</field>
+        <field name="police_employee_id">142</field>
+        <field name="police_dip">42</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 6</field>
+    </record>
+    <record id="employee_police_143" model="hr.employee">
+        <field name="name">Rafael</field>
+        <field name="police_employee_id">143</field>
+        <field name="police_dip">43</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 3</field>
+    </record>
+    <record id="employee_police_144" model="hr.employee">
+        <field name="name">Moisés</field>
+        <field name="police_employee_id">144</field>
+        <field name="police_dip">44</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 3</field>
+    </record>
+    <record id="employee_police_145" model="hr.employee">
+        <field name="name">Delgado</field>
+        <field name="police_employee_id">145</field>
+        <field name="police_dip">45</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 1</field>
+    </record>
+    <record id="employee_police_146" model="hr.employee">
+        <field name="name">Juan Pedro</field>
+        <field name="police_employee_id">146</field>
+        <field name="police_dip">46</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 1</field>
+    </record>
+    <record id="employee_police_147" model="hr.employee">
+        <field name="name">Jose Manuel</field>
+        <field name="police_employee_id">147</field>
+        <field name="police_dip">47</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 1</field>
+    </record>
+    <record id="employee_police_148" model="hr.employee">
+        <field name="name">Rocío</field>
+        <field name="police_employee_id">148</field>
+        <field name="police_dip">48</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 2</field>
+    </record>
+    <record id="employee_police_149" model="hr.employee">
+        <field name="name">Pablo</field>
+        <field name="police_employee_id">149</field>
+        <field name="police_dip">49</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 6</field>
+    </record>
+    <record id="employee_police_150" model="hr.employee">
+        <field name="name">Eduardo</field>
+        <field name="police_employee_id">150</field>
+        <field name="police_dip">50</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 2</field>
+    </record>
+    <record id="employee_police_151" model="hr.employee">
+        <field name="name">Flores</field>
+        <field name="police_employee_id">151</field>
+        <field name="police_dip">51</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 2</field>
+    </record>
+    <record id="employee_police_152" model="hr.employee">
+        <field name="name">Borja</field>
+        <field name="police_employee_id">152</field>
+        <field name="police_dip">52</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 5</field>
+    </record>
+    <record id="employee_police_153" model="hr.employee">
+        <field name="name">Rocío Romero</field>
+        <field name="police_employee_id">153</field>
+        <field name="police_dip">53</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 3</field>
+    </record>
+    <record id="employee_police_154" model="hr.employee">
+        <field name="name">Romero Cejudo</field>
+        <field name="police_employee_id">154</field>
+        <field name="police_dip">54</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 3</field>
+    </record>
+    <record id="employee_police_155" model="hr.employee">
+        <field name="name">Vázquez Dominguez</field>
+        <field name="police_employee_id">155</field>
+        <field name="police_dip">55</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 4</field>
+    </record>
+    <record id="employee_police_156" model="hr.employee">
+        <field name="name">Jorge España</field>
+        <field name="police_employee_id">156</field>
+        <field name="police_dip">56</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 6</field>
+    </record>
+    <record id="employee_police_157" model="hr.employee">
+        <field name="name">Dominguez Ruiz</field>
+        <field name="police_employee_id">157</field>
+        <field name="police_dip">57</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 2</field>
+    </record>
+    <record id="employee_police_158" model="hr.employee">
+        <field name="name">Javier</field>
+        <field name="police_employee_id">158</field>
+        <field name="police_dip">58</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 2</field>
+    </record>
+    <record id="employee_police_159" model="hr.employee">
+        <field name="name">Muriel</field>
+        <field name="police_employee_id">159</field>
+        <field name="police_dip">59</field>
+        <field name="police_category">police</field>
+        <field name="police_group">Grupo 2</field>
+    </record>
+</odoo>

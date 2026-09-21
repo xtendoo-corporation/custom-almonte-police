@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_extra_summary_list" model="ir.ui.view">
+        <field name="name">almonte.police.extra.summary.list</field>
+        <field name="model">almonte.police.extra.summary</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="employee_id" />
+                <field name="service_count" />
+                <field name="total_hours" />
+                <field name="total_amount" sum="Total" />
+                <field name="currency_id" />
+            </list>
+        </field>
+    </record>
+    <record id="view_extra_summary_pivot" model="ir.ui.view">
+        <field name="name">almonte.police.extra.summary.pivot</field>
+        <field name="model">almonte.police.extra.summary</field>
+        <field name="arch" type="xml">
+            <pivot>
+                <field name="employee_id" type="row" />
+                <field name="service_count" type="measure" />
+                <field name="total_hours" type="measure" />
+                <field name="total_amount" type="measure" />
+            </pivot>
+        </field>
+    </record>
+</odoo>

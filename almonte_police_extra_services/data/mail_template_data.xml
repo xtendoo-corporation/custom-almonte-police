@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo noupdate="1">
+    <record id="mail_template_signup_assigned" model="mail.template">
+        <field name="name">Policía Local: servicio extraordinario adjudicado</field>
+        <field name="model_id" ref="model_almonte_police_extra_service_signup" />
+        <field
+            name="email_from"
+        >{{ (user.email_formatted or user.company_id.email_formatted) }}</field>
+        <field
+            name="email_to"
+        >{{ object.employee_id.user_id.email or object.employee_id.work_email or '' }}</field>
+        <field
+            name="subject"
+        >Servicio extraordinario adjudicado: {{ object.service_id.name }}</field>
+        <field name="use_default_to" eval="False" />
+        <field name="auto_delete" eval="True" />
+        <field name="body_html" type="html">
+            <div style="margin: 0px; padding: 0px;">
+                <p>Hola <t t-out="object.employee_id.name" />,</p>
+                <p>
+                    Se te ha adjudicado el servicio extraordinario
+                    <strong><t t-out="object.service_id.name" /></strong>
+                    del día
+                    <strong><t
+                            t-out="format_date(object.service_id.service_date)"
+                        /></strong>.
+                </p>
+                <ul>
+                    <li>Turno: <t
+                            t-out="object.service_id.required_shift_id.name"
+                        /></li>
+                    <li>Tipo de servicio: <t
+                            t-out="object.service_id.service_type_id.name"
+                        /></li>
+                    <li>Horas: <t t-out="object.service_id.hours" /></li>
+                    <li>Importe estimado: <t t-out="object.amount" /></li>
+                </ul>
+                <p>Puedes consultar el detalle desde tu usuario de Odoo.</p>
+                <p>Un saludo,<br />Policía Local de Almonte</p>
+            </div>
+        </field>
+    </record>
+
+    <record id="mail_template_signup_waiting" model="mail.template">
+        <field
+            name="name"
+        >Policía Local: servicio extraordinario en lista de espera</field>
+        <field name="model_id" ref="model_almonte_police_extra_service_signup" />
+        <field
+            name="email_from"
+        >{{ (user.email_formatted or user.company_id.email_formatted) }}</field>
+        <field
+            name="email_to"
+        >{{ object.employee_id.user_id.email or object.employee_id.work_email or '' }}</field>
+        <field
+            name="subject"
+        >Servicio extraordinario resuelto (lista de espera): {{ object.service_id.name }}</field>
+        <field name="use_default_to" eval="False" />
+        <field name="auto_delete" eval="True" />
+        <field name="body_html" type="html">
+            <div style="margin: 0px; padding: 0px;">
+                <p>Hola <t t-out="object.employee_id.name" />,</p>
+                <p>
+                    El proceso de adjudicación del servicio extraordinario
+                    <strong><t t-out="object.service_id.name" /></strong>
+                    del día
+                    <strong><t
+                            t-out="format_date(object.service_id.service_date)"
+                        /></strong>
+                    ya se ha resuelto y, por el momento, has quedado en
+                    lista de espera (ranking <t t-out="object.rank" />).
+                </p>
+                <p>
+                    Si se libera alguna plaza se te podrá adjudicar por
+                    orden de prioridad.
+                </p>
+                <p>Un saludo,<br />Policía Local de Almonte</p>
+            </div>
+        </field>
+    </record>
+</odoo>

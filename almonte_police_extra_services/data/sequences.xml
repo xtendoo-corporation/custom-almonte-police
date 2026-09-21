@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo noupdate="1">
+    <record id="seq_police_extra_service" model="ir.sequence">
+        <field name="name">Oferta de servicio extraordinario</field>
+        <field name="code">almonte.police.extra.service</field>
+        <field name="prefix">EXT/%(year)s/</field>
+        <field name="padding">4</field>
+    </record>
+</odoo>

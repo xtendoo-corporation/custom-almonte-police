@@ -1,0 +1,18 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+#
+# * almonte_police_extra_services
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Language: es\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+#. module: almonte_police_extra_services
+msgid "Almonte - Policía Local y Servicios Extraordinarios"
+msgstr ""
+
+#. module: almonte_police_extra_services
+#: model:ir.model.fields,field_description:almonte_police_extra_services.field_almonte_police_shift_type__state_kind
+msgid "State Kind"
+msgstr "Tipo de estado"
