@@ -613,3 +613,13 @@ class TestAlmontePoliceSelfService(TransactionCase):
             .search([("id", "=", service.id)])
         )
         self.assertTrue(services)
+
+
+class TestAlmontePoliceMenu(TransactionCase):
+    def test_root_menu_shows_app_icon(self):
+        root_menu = self.env.ref("almonte_police_extra_services.menu_police_root")
+        self.assertEqual(
+            root_menu.web_icon,
+            "almonte_police_extra_services,static/description/icon.png",
+        )
+        self.assertTrue(root_menu.web_icon_data)

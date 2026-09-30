@@ -120,6 +120,7 @@
         id="menu_police_root"
         name="Policía Local"
         sequence="50"
+        web_icon="almonte_police_extra_services,static/description/icon.png"
         groups="base.group_system,group_police_extra_agent,group_police_extra_user,group_police_extra_manager"
     />
     <menuitem
