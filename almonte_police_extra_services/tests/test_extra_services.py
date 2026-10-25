@@ -623,3 +623,72 @@ class TestAlmontePoliceMenu(TransactionCase):
             "almonte_police_extra_services,static/description/icon.png",
         )
         self.assertTrue(root_menu.web_icon_data)
+
+    def _menu(self, xml_id):
+        return self.env.ref(f"almonte_police_extra_services.{xml_id}")
+
+    def _assert_children(self, parent_xml_id, child_xml_ids):
+        parent = self._menu(parent_xml_id)
+        for child_xml_id in child_xml_ids:
+            with self.subTest(menu=child_xml_id):
+                self.assertEqual(self._menu(child_xml_id).parent_id, parent)
+
+    def test_top_level_menus(self):
+        root_menu = self._menu("menu_police_root")
+        top_menus = self.env["ir.ui.menu"].search([("parent_id", "=", root_menu.id)])
+        self.assertEqual(
+            set(top_menus.mapped("name")),
+            {"Servicios", "Informes", "Configuración"},
+        )
+
+    def test_services_menu_groups_services_and_schedule(self):
+        self._assert_children(
+            "menu_services",
+            (
+                "menu_extra_services_available",
+                "menu_my_signups",
+                "menu_extra_services",
+                "menu_schedule",
+            ),
+        )
+
+    def test_reports_menu_contains_summary_and_history(self):
+        self.assertFalse(self._menu("menu_reports").action)
+        self._assert_children("menu_reports", ("menu_extra_summary", "menu_history"))
+
+    def test_configuration_menu_contains_agents(self):
+        self._assert_children(
+            "menu_configuration",
+            (
+                "menu_police_employees",
+                "menu_working_schedules",
+                "menu_service_types",
+                "menu_shift_types",
+                "menu_restrictions",
+            ),
+        )
+
+    def test_coordinator_sees_agents_but_not_manager_configuration(self):
+        coordinator = self.env["res.users"].create(
+            {
+                "name": "Coordinador Menú",
+                "login": "coordinador.menu@example.com",
+                "group_ids": [
+                    (
+                        6,
+                        0,
+                        [
+                            self.env.ref(
+                                "almonte_police_extra_services.group_police_extra_user"
+                            ).id
+                        ],
+                    )
+                ],
+            }
+        )
+        visible_menu_ids = (
+            self.env["ir.ui.menu"].with_user(coordinator)._visible_menu_ids()
+        )
+        self.assertIn(self._menu("menu_configuration").id, visible_menu_ids)
+        self.assertIn(self._menu("menu_police_employees").id, visible_menu_ids)
+        self.assertNotIn(self._menu("menu_service_types").id, visible_menu_ids)

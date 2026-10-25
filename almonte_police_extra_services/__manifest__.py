@@ -5,7 +5,7 @@
         "Cuadrantes, disponibilidad, adjudicación equitativa y cálculo "
         "económico de servicios extraordinarios de la Policía Local."
     ),
-    "version": "19.0.1.1.0",
+    "version": "19.0.1.2.0",
     "category": "Human Resources",
     "author": "Xtendoo, Tecnativa",
     "website": "https://www.xtendoo.es",
