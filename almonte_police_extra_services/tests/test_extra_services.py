@@ -692,3 +692,23 @@ class TestAlmontePoliceMenu(TransactionCase):
         self.assertIn(self._menu("menu_configuration").id, visible_menu_ids)
         self.assertIn(self._menu("menu_police_employees").id, visible_menu_ids)
         self.assertNotIn(self._menu("menu_service_types").id, visible_menu_ids)
+
+    def test_schedule_action_opens_calendar_by_default(self):
+        action = self.env.ref("almonte_police_extra_services.action_schedule")
+        self.assertEqual(
+            action.views,
+            [
+                (
+                    self.env.ref(
+                        "almonte_police_extra_services.view_schedule_assignment_calendar"
+                    ).id,
+                    "calendar",
+                ),
+                (
+                    self.env.ref(
+                        "almonte_police_extra_services.view_schedule_assignment_list"
+                    ).id,
+                    "list",
+                ),
+            ],
+        )
