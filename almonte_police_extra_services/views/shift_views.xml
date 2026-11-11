@@ -205,8 +205,9 @@
             <list editable="bottom">
                 <field name="previous_shift_id" />
                 <field name="required_shift_id" />
+                <field name="rule_description" />
                 <field name="reason" />
-                <field name="active" />
+                <field name="active" widget="boolean_toggle" />
             </list>
         </field>
     </record>

@@ -395,7 +395,7 @@ class TestAlmontePoliceAssignmentExtensions(TransactionCase):
             return self.env.ref(f"almonte_police_extra_services.{xml_id}")
 
         self.assertEqual(
-            menu("menu_schedule_generate").parent_id, menu("menu_services")
+            menu("menu_schedule_generate").parent_id, menu("menu_management")
         )
         self.assertEqual(
             menu("menu_baremo_reset").parent_id, menu("menu_configuration")

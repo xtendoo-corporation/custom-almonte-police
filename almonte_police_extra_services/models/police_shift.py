@@ -177,18 +177,39 @@ class PoliceShiftRestriction(models.Model):
 
     previous_shift_id = fields.Many2one(
         "almonte.police.shift.type",
+        string="Si el día anterior trabajó",
         required=True,
         ondelete="cascade",
+        help="Turno que el agente tiene en su cuadrante el día anterior al "
+        "servicio extraordinario.",
     )
     required_shift_id = fields.Many2one(
         "almonte.police.shift.type",
+        string="No puede hacer extras de",
         required=True,
         ondelete="cascade",
+        help="Turno del servicio extraordinario que queda incompatible.",
     )
-    reason = fields.Char(required=True, default="Descanso mínimo")
-    active = fields.Boolean(default=True)
+    rule_description = fields.Char(
+        string="Regla",
+        compute="_compute_rule_description",
+    )
+    reason = fields.Char(string="Motivo", required=True, default="Descanso mínimo")
+    active = fields.Boolean(string="Activa", default=True)
 
     _restriction_unique = models.Constraint(
         "UNIQUE(previous_shift_id, required_shift_id)",
         "La restricción entre estos turnos ya existe.",
     )
+
+    @api.depends("previous_shift_id.name", "required_shift_id.name")
+    def _compute_rule_description(self):
+        for restriction in self:
+            if restriction.previous_shift_id and restriction.required_shift_id:
+                restriction.rule_description = (
+                    f"Tras un turno de {restriction.previous_shift_id.name}, "
+                    f"no puede hacer un extra de {restriction.required_shift_id.name}"
+                    " al día siguiente"
+                )
+            else:
+                restriction.rule_description = False

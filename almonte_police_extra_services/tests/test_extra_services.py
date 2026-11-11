@@ -990,19 +990,74 @@ class TestAlmontePoliceMenu(TransactionCase):
         top_menus = self.env["ir.ui.menu"].search([("parent_id", "=", root_menu.id)])
         self.assertEqual(
             set(top_menus.mapped("name")),
-            {"Servicios", "Informes", "Configuración"},
+            {"Mis servicios", "Gestión", "Informes", "Configuración"},
         )
 
-    def test_services_menu_groups_services_and_schedule(self):
+    def test_services_menu_contains_only_agent_options(self):
         self._assert_children(
             "menu_services",
             (
+                "menu_my_schedule",
+                "menu_my_absence_requests",
                 "menu_extra_services_available",
+                "menu_extra_services_assignments",
                 "menu_my_signups",
-                "menu_extra_services",
-                "menu_schedule",
+                "menu_my_settlements",
             ),
         )
+        children = self.env["ir.ui.menu"].search(
+            [("parent_id", "=", self._menu("menu_services").id)]
+        )
+        self.assertEqual(len(children), 6)
+
+    def test_management_menu_contains_coordinator_options(self):
+        self._assert_children(
+            "menu_management",
+            (
+                "menu_extra_services",
+                "menu_schedule",
+                "menu_schedule_generate",
+                "menu_schedule_import",
+                "menu_absence_requests",
+            ),
+        )
+
+    def _visible_menus_for_group(self, login, group_xml_id):
+        user = self.env["res.users"].create(
+            {
+                "name": login,
+                "login": login,
+                "group_ids": [
+                    (
+                        6,
+                        0,
+                        [
+                            self.env.ref(
+                                f"almonte_police_extra_services.{group_xml_id}"
+                            ).id
+                        ],
+                    )
+                ],
+            }
+        )
+        return self.env["ir.ui.menu"].with_user(user)._visible_menu_ids()
+
+    def test_agent_does_not_see_management_menu(self):
+        menus = self._visible_menus_for_group(
+            "agent_menu_branches", "group_police_extra_agent"
+        )
+        self.assertIn(self._menu("menu_services").id, menus)
+        self.assertIn(self._menu("menu_my_schedule").id, menus)
+        self.assertNotIn(self._menu("menu_management").id, menus)
+        self.assertNotIn(self._menu("menu_schedule").id, menus)
+
+    def test_coordinator_sees_both_menu_branches(self):
+        menus = self._visible_menus_for_group(
+            "coordinator_menu_branches", "group_police_extra_user"
+        )
+        self.assertIn(self._menu("menu_services").id, menus)
+        self.assertIn(self._menu("menu_management").id, menus)
+        self.assertIn(self._menu("menu_schedule_import").id, menus)
 
     def test_reports_menu_contains_summary_and_history(self):
         self.assertFalse(self._menu("menu_reports").action)
@@ -1015,11 +1070,18 @@ class TestAlmontePoliceMenu(TransactionCase):
                 "menu_police_employees",
                 "menu_police_categories",
                 "menu_police_groups",
-                "menu_working_schedules",
                 "menu_service_types",
                 "menu_shift_types",
                 "menu_restrictions",
             ),
+        )
+
+    def test_working_schedules_menu_is_removed(self):
+        self.assertFalse(
+            self.env.ref(
+                "almonte_police_extra_services.menu_working_schedules",
+                raise_if_not_found=False,
+            )
         )
 
     def test_coordinator_sees_agents_but_not_manager_configuration(self):

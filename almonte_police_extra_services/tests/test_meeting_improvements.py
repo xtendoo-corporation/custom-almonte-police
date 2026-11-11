@@ -561,3 +561,33 @@ class TestAlmontePoliceMeetingImprovements(TransactionCase):
             [("employee_id", "=", self.other_employee.id)]
         )
         self.assertEqual(len(days), 5)
+
+
+class TestShiftRestrictionLabels(TransactionCase):
+    def test_rule_description_explains_restriction(self):
+        restriction = self.env.ref(
+            "almonte_police_extra_services.restriction_night_morning"
+        )
+        self.assertEqual(
+            restriction.rule_description,
+            "Tras un turno de Noche, no puede hacer un extra de Mañana al día "
+            "siguiente",
+        )
+
+    def test_rule_description_empty_without_shifts(self):
+        restriction = self.env["almonte.police.shift.restriction"].new({})
+        self.assertFalse(restriction.rule_description)
+
+    def test_restriction_fields_have_spanish_labels(self):
+        fields_info = self.env["almonte.police.shift.restriction"].fields_get(
+            ["previous_shift_id", "required_shift_id", "reason", "active"],
+            ["string"],
+        )
+        self.assertEqual(
+            fields_info["previous_shift_id"]["string"], "Si el día anterior trabajó"
+        )
+        self.assertEqual(
+            fields_info["required_shift_id"]["string"], "No puede hacer extras de"
+        )
+        self.assertEqual(fields_info["reason"]["string"], "Motivo")
+        self.assertEqual(fields_info["active"]["string"], "Activa")

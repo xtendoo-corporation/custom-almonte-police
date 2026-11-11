@@ -111,30 +111,23 @@
         <field name="name">Restricciones entre turnos</field>
         <field name="res_model">almonte.police.shift.restriction</field>
         <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Define qué servicios extraordinarios no puede hacer un agente
+                según el turno que trabajó el día anterior.
+            </p>
+            <p>
+                Ejemplo: si el día anterior trabajó de <strong>Noche</strong>,
+                no puede hacer un extra de <strong>Mañana</strong>. Las
+                inscripciones que incumplen una regla quedan excluidas de la
+                adjudicación.
+            </p>
+        </field>
     </record>
     <record id="action_extra_summary" model="ir.actions.act_window">
         <field name="name">Resumen económico por policía</field>
         <field name="res_model">almonte.police.extra.summary</field>
         <field name="view_mode">list,pivot</field>
-    </record>
-    <record id="action_working_schedules" model="ir.actions.act_window">
-        <field name="name">Calendarios laborales</field>
-        <field name="res_model">resource.calendar</field>
-        <field name="view_mode">list,form</field>
-        <field name="view_id" ref="resource.view_resource_calendar_tree" />
-        <field name="search_view_id" ref="resource.view_resource_calendar_search" />
-        <field
-            name="domain"
-        >['|', ('company_id', '=', False), ('company_id', 'in', allowed_company_ids)]</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Configura aquí los horarios laborales de referencia.
-            </p>
-            <p>
-                El cuadrante policial diario del módulo se gestiona desde
-                <strong>Cuadrante</strong>, no desde estos calendarios estándar.
-            </p>
-        </field>
     </record>
     <record id="action_extra_services_available" model="ir.actions.act_window">
         <field name="name">Servicios disponibles</field>
@@ -233,10 +226,17 @@
     />
     <menuitem
         id="menu_services"
-        name="Servicios"
+        name="Mis servicios"
         parent="menu_police_root"
-        groups="base.group_system,group_police_extra_agent,group_police_extra_user,group_police_extra_manager"
+        groups="group_police_extra_agent"
         sequence="10"
+    />
+    <menuitem
+        id="menu_management"
+        name="Gestión"
+        parent="menu_police_root"
+        groups="group_police_extra_user,group_police_extra_manager"
+        sequence="15"
     />
     <menuitem
         id="menu_extra_services_available"
@@ -280,8 +280,8 @@
     />
     <menuitem
         id="menu_extra_services"
-        name="Gestión de servicios extraordinarios"
-        parent="menu_services"
+        name="Servicios extraordinarios"
+        parent="menu_management"
         action="action_extra_services"
         groups="group_police_extra_user,group_police_extra_manager"
         sequence="15"
@@ -289,7 +289,7 @@
     <menuitem
         id="menu_schedule"
         name="Cuadrante"
-        parent="menu_services"
+        parent="menu_management"
         action="action_schedule"
         groups="group_police_extra_user,group_police_extra_manager"
         sequence="20"
@@ -297,7 +297,7 @@
     <menuitem
         id="menu_schedule_generate"
         name="Generar cuadrante por ciclos"
-        parent="menu_services"
+        parent="menu_management"
         action="action_schedule_generate_wizard"
         groups="group_police_extra_user,group_police_extra_manager"
         sequence="21"
@@ -305,7 +305,7 @@
     <menuitem
         id="menu_schedule_import"
         name="Importar cuadrante desde Excel"
-        parent="menu_services"
+        parent="menu_management"
         action="action_schedule_import_wizard"
         groups="group_police_extra_user,group_police_extra_manager"
         sequence="22"
@@ -321,7 +321,7 @@
     <menuitem
         id="menu_absence_requests"
         name="Solicitudes de ausencia"
-        parent="menu_services"
+        parent="menu_management"
         action="action_absence_requests"
         groups="group_police_extra_user,group_police_extra_manager"
         sequence="23"
@@ -395,14 +395,6 @@
         action="action_police_groups"
         groups="base.group_system,group_police_extra_manager"
         sequence="7"
-    />
-    <menuitem
-        id="menu_working_schedules"
-        name="Calendarios laborales"
-        parent="menu_configuration"
-        action="action_working_schedules"
-        groups="group_police_extra_user,group_police_extra_manager"
-        sequence="10"
     />
     <menuitem
         id="menu_baremo_reset"
