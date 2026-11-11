@@ -6,10 +6,9 @@ from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError, ValidationError
 
 EXCLUDED_PRIORITY = 999999
-MIN_FREE_HOURS_BEFORE = 8
 PRIORITY_TIERS = [
     ("1_free", "1. Libre"),
-    ("2_rested", "2. 8 h libres antes"),
+    ("2_rested", "2. Descanso mínimo antes"),
     ("3_double", "3. Dobla turno"),
     ("4_restricted", "4. Restringido"),
     ("5_unavailable", "5. No disponible"),
@@ -254,11 +253,53 @@ class PoliceExtraService(models.Model):
         for record in self:
             if record.vacancies < 1:
                 raise ValidationError(_("Una oferta debe tener al menos una plaza."))
+            if record.vacancies < len(record._get_assigned_signups()):
+                raise ValidationError(
+                    _(
+                        "No puede haber menos plazas que agentes ya adjudicados "
+                        "en la oferta %s.",
+                        record.name,
+                    )
+                )
             if record.hours < 0:
                 raise ValidationError(_("Las horas no pueden ser negativas."))
 
     def action_publish(self):
         self.write({"state": "published"})
+
+    def _get_assigned_signups(self):
+        self.ensure_one()
+        return self.signup_ids.filtered(
+            lambda signup: signup.state in ("assigned_free", "assigned_double")
+        )
+
+    def action_reopen(self):
+        """Reabre una oferta adjudicada para ampliar plazas.
+
+        Las adjudicaciones ya hechas se mantienen. Los agentes que quedaron en
+        lista de espera vuelven a competir por las plazas nuevas junto con los
+        que se inscriban durante la reapertura.
+        """
+        for service in self:
+            if service.state != "assigned":
+                raise UserError(_("Solo se pueden reabrir ofertas adjudicadas."))
+            waiting = service.signup_ids.filtered(
+                lambda signup: signup.state in ("waiting_free", "waiting_double")
+            )
+            waiting.write({"state": "registered"})
+            waiting._compute_state()
+            service.state = "published"
+            body = _(
+                "Oferta reabierta para ampliar plazas. Se mantienen %s adjudicaciones.",
+                len(service._get_assigned_signups()),
+            )
+            if not service.is_signup_open:
+                service.signup_deadline = False
+                body += " " + _(
+                    "El límite de inscripción había vencido y se ha quitado; "
+                    "fija uno nuevo si es necesario."
+                )
+            service.message_post(body=body)
 
     def action_print_decree(self):
         return self.env.ref(
@@ -309,9 +350,12 @@ class PoliceExtraService(models.Model):
             candidates = service.signup_ids.filtered(
                 lambda signup: signup.state in ("eligible_free", "eligible_double")
             )
+            free_vacancies = max(
+                service.vacancies - len(service._get_assigned_signups()), 0
+            )
             assigned = candidates.sorted(
                 key=lambda signup: (signup.priority_score, signup.id)
-            )[: service.vacancies]
+            )[:free_vacancies]
             for signup in service.signup_ids:
                 if signup in assigned:
                     signup.state = (
@@ -611,17 +655,20 @@ class PoliceExtraServiceSignup(models.Model):
         Devuelve una tupla ``(nivel, estado legible)``:
 
         1. Libre ese día.
-        2. Trabaja ese día pero tiene al menos 8 horas libres antes del servicio.
-        3. Dobla turno (continuo o con menos de 8 horas libres antes).
-        4. Restringido: descanso obligatorio (p. ej. Noche → Mañana) o el
-           servicio coincide con su propio turno.
-        5. No disponible: permisos, bajas o sin cuadrante.
+        2. Trabaja ese día pero tiene el descanso mínimo configurado en la
+           compañía (8 horas por defecto) antes del servicio.
+        3. Dobla turno (continuo o con menos descanso que el mínimo).
+        4. Restringido: incompatibilidad configurada entre turnos (p. ej.
+           Noche → Mañana) o el servicio coincide con su propio turno.
+        5. No disponible: ausencias que impiden ese extra o sin cuadrante.
+           Las ausencias parciales (p. ej. cita médica de mañana) que no
+           impiden el turno del extra cuentan como libre.
         """
         self.ensure_one()
         service_shift = self.service_id.required_shift_id
         if not current_shift:
             return "5_unavailable", _("NO DISPONIBLE (sin cuadrante)")
-        if current_shift.state_kind == "absence":
+        if current_shift._blocks_extra_shift(service_shift):
             return "5_unavailable", _("NO DISPONIBLE (%s)", current_shift.code)
         conflict = self.service_id._get_conflicting_history(self.employee_id)
         if conflict:
@@ -634,7 +681,7 @@ class PoliceExtraServiceSignup(models.Model):
                 previous=previous_shift.name,
                 service=service_shift.name,
             )
-        if current_shift.state_kind == "rest":
+        if current_shift.state_kind in ("rest", "absence"):
             return "1_free", _("LIBRE")
         service_interval = service_shift._get_interval()
         work_intervals = [
@@ -665,8 +712,9 @@ class PoliceExtraServiceSignup(models.Model):
         free_hours_before = (
             service_start - max(previous_ends) if previous_ends else float("inf")
         )
-        if free_hours_before >= MIN_FREE_HOURS_BEFORE:
-            return "2_rested", _("8 H LIBRES ANTES")
+        min_rest_hours = self.env.company.police_min_rest_hours
+        if free_hours_before >= min_rest_hours:
+            return "2_rested", _("%s H LIBRES ANTES", f"{min_rest_hours:g}")
         return "3_double", _("DOBLA TURNO")
 
     @api.depends(

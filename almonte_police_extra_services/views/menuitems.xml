@@ -303,6 +303,30 @@
         sequence="21"
     />
     <menuitem
+        id="menu_schedule_import"
+        name="Importar cuadrante desde Excel"
+        parent="menu_services"
+        action="action_schedule_import_wizard"
+        groups="group_police_extra_user,group_police_extra_manager"
+        sequence="22"
+    />
+    <menuitem
+        id="menu_my_absence_requests"
+        name="Mis solicitudes de ausencia"
+        parent="menu_services"
+        action="action_my_absence_requests"
+        groups="group_police_extra_agent"
+        sequence="3"
+    />
+    <menuitem
+        id="menu_absence_requests"
+        name="Solicitudes de ausencia"
+        parent="menu_services"
+        action="action_absence_requests"
+        groups="group_police_extra_user,group_police_extra_manager"
+        sequence="23"
+    />
+    <menuitem
         id="menu_reports"
         name="Informes"
         parent="menu_police_root"
@@ -411,5 +435,13 @@
         action="action_restrictions"
         groups="base.group_system,group_police_extra_manager"
         sequence="30"
+    />
+    <menuitem
+        id="menu_assignment_settings"
+        name="Parámetros de adjudicación"
+        parent="menu_configuration"
+        action="action_assignment_settings_wizard"
+        groups="base.group_system,group_police_extra_manager"
+        sequence="31"
     />
 </odoo>

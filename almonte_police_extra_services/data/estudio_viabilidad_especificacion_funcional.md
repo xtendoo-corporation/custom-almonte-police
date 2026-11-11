@@ -305,3 +305,24 @@ email de cada agente con el Ayuntamiento.
    opción de conservar permisos y bajas.
 5. **PNR (permiso no retribuido)** como ausencia y **Decreto de adjudicación** en
    PDF desde la oferta adjudicada.
+
+## Mejoras acordadas en la reunión del 11/11/2026 (versión 19.0.1.8.0)
+
+- **Importador de cuadrantes Excel**: asistente *Cuadrante → Importar cuadrante Excel*
+  que lee las hojas «Policías» (ID, DIP, nombre, categoría, grupo) y «Cuadrante»
+  (una columna por día). Sobrescribe los días presentes en el fichero y, si hay
+  cualquier error, no importa nada y muestra el listado de errores.
+- **Códigos alternativos de turno**: campo *Códigos alternativos* (p. ej. `HRS` para
+  horas sindicales `HS`), usado por el importador.
+- **Solicitudes de ausencia**: el agente solicita vacaciones/asuntos propios (tipos
+  marcados como *Solicitable por el agente*); el coordinador aprueba o rechaza y la
+  aprobación escribe el cuadrante.
+- **Ausencias parciales**: cada tipo de turno define si bloquea todos los extras,
+  solo los de ciertos turnos (p. ej. cita médica mañana/tarde) o ninguno.
+- **Descanso mínimo parametrizable**: *Configuración → Parámetros de adjudicación*
+  (por defecto 8 h).
+- **Reapertura de servicios**: permite ampliar plazas tras la adjudicación,
+  conservando las adjudicaciones existentes y asignando solo las nuevas plazas.
+- **Grupos 7 a 10** añadidos a los datos maestros.
+- **Acceso por DIP**: el usuario del agente usa el DIP como login y el botón
+  *Regenerar contraseña* genera una clave temporal.

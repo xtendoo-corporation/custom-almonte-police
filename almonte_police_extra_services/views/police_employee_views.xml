@@ -33,13 +33,29 @@
                     groups="almonte_police_extra_services.group_police_extra_manager"
                 >
                     Este agente todavía no tiene un usuario Odoo. Puedes
-                    crearle uno para que acceda al autoservicio de la
-                    Policía Local.
+                    crearle uno (su login será el DIP) para que acceda al
+                    autoservicio de la Policía Local.
                     <button
                         name="action_create_police_user"
                         string="Crear usuario Odoo"
                         type="object"
                         class="btn-link"
+                    />
+                </div>
+                <div
+                    class="alert alert-secondary"
+                    role="alert"
+                    invisible="not police_category_id or not user_id"
+                    groups="almonte_police_extra_services.group_police_extra_manager"
+                >
+                    El agente accede con su DIP. Si ha olvidado la contraseña,
+                    genera una nueva clave temporal y entrégasela.
+                    <button
+                        name="action_regenerate_police_password"
+                        string="Regenerar contraseña"
+                        type="object"
+                        class="btn-link"
+                        confirm="Se generará una nueva contraseña y la actual dejará de funcionar. ¿Continuar?"
                     />
                 </div>
             </xpath>

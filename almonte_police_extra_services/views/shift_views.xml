@@ -12,6 +12,9 @@
                 <field name="is_night" />
                 <field name="start_hour" widget="float_time" />
                 <field name="end_hour" widget="float_time" />
+                <field name="alias_codes" optional="show" />
+                <field name="agent_requestable" optional="show" />
+                <field name="extra_block_mode" optional="hide" />
                 <field name="color" widget="color_picker" />
                 <field name="active" />
             </list>
@@ -39,8 +42,23 @@
                             widget="float_time"
                             invisible="state_kind != 'work'"
                         />
+                        <field name="alias_codes" placeholder="p. ej. HRS" />
                         <field name="color" widget="color_picker" />
                         <field name="active" />
+                    </group>
+                    <group
+                        string="Ausencias"
+                        invisible="state_kind != 'absence'"
+                    >
+                        <field name="agent_requestable" />
+                        <field name="extra_block_mode" widget="radio" />
+                        <field
+                            name="blocked_extra_shift_ids"
+                            widget="many2many_tags"
+                            options="{'no_create': True}"
+                            invisible="extra_block_mode != 'selected'"
+                            required="state_kind == 'absence' and extra_block_mode == 'selected'"
+                        />
                     </group>
                     <field name="notes" />
                 </sheet>

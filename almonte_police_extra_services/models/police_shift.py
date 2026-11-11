@@ -11,6 +11,11 @@ class PoliceShiftType(models.Model):
 
     name = fields.Char(required=True, translate=True)
     code = fields.Char(required=True, index=True)
+    alias_codes = fields.Char(
+        string="Códigos alternativos",
+        help="Otros códigos, separados por comas, que se reconocen como este "
+        "turno al importar cuadrantes (p. ej. HRS para Horas sindicales).",
+    )
     sequence = fields.Integer(default=10)
     state_kind = fields.Selection(
         selection=[
@@ -39,6 +44,33 @@ class PoliceShiftType(models.Model):
         default=0,
         help="Color utilizado para identificar este turno en el calendario.",
     )
+    agent_requestable = fields.Boolean(
+        string="Solicitable por el agente",
+        help="Los agentes pueden solicitar este estado (vacaciones, asuntos "
+        "propios...) desde el autoservicio. La solicitud requiere aprobación.",
+    )
+    extra_block_mode = fields.Selection(
+        selection=[
+            ("all", "Impide cualquier extra"),
+            ("selected", "Impide solo los extras de los turnos indicados"),
+            ("none", "No impide extras"),
+        ],
+        string="Efecto en extras",
+        required=True,
+        default="all",
+        help="Solo aplica a las ausencias. Permite, por ejemplo, que una cita "
+        "médica de mañana impida los extras de mañana pero no los de tarde.",
+    )
+    blocked_extra_shift_ids = fields.Many2many(
+        "almonte.police.shift.type",
+        "almonte_police_shift_type_blocked_rel",
+        "absence_shift_id",
+        "blocked_shift_id",
+        string="Extras impedidos",
+        domain=[("state_kind", "=", "work")],
+        help="Turnos de servicio extraordinario que no puede realizar el "
+        "agente ese día.",
+    )
     active = fields.Boolean(default=True)
     notes = fields.Text()
 
@@ -52,6 +84,49 @@ class PoliceShiftType(models.Model):
         for record in self:
             if not record.code.strip():
                 raise ValidationError(_("El código del turno no puede estar vacío."))
+
+    @api.model
+    def _normalize_code(self, code):
+        return str(code or "").strip().upper()
+
+    def _get_all_codes(self):
+        self.ensure_one()
+        aliases = (self.alias_codes or "").split(",")
+        return {
+            code for code in map(self._normalize_code, [self.code, *aliases]) if code
+        }
+
+    @api.model
+    def _get_code_map(self):
+        """Mapa ``código normalizado -> turno`` incluyendo los alias."""
+        code_map = {}
+        for shift in self.search([]):
+            for code in shift._get_all_codes():
+                code_map.setdefault(code, shift)
+        return code_map
+
+    @api.constrains("code", "alias_codes")
+    def _check_alias_codes(self):
+        for record in self:
+            others = self.search([("id", "!=", record.id)])
+            used = set().union(*(other._get_all_codes() for other in others))
+            duplicated = record._get_all_codes() & used
+            if duplicated:
+                raise ValidationError(
+                    _(
+                        "Los códigos %s ya se usan en otro tipo de turno.",
+                        ", ".join(sorted(duplicated)),
+                    )
+                )
+
+    def _blocks_extra_shift(self, service_shift):
+        """Indica si este estado del cuadrante impide un extra de ``service_shift``."""
+        self.ensure_one()
+        if self.state_kind != "absence" or self.extra_block_mode == "none":
+            return False
+        if self.extra_block_mode == "all":
+            return True
+        return service_shift in self.blocked_extra_shift_ids
 
     @api.constrains("start_hour", "end_hour")
     def _check_hours(self):

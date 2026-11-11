@@ -86,4 +86,79 @@
             eval="[(4, ref('group_police_extra_user')), (4, ref('group_police_extra_manager'))]"
         />
     </record>
+
+    <record id="view_assignment_settings_wizard_form" model="ir.ui.view">
+        <field name="name">almonte.police.assignment.settings.wizard.form</field>
+        <field name="model">almonte.police.assignment.settings.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <div class="alert alert-info" role="alert">
+                    Un agente que trabaja el día del servicio tiene prioridad
+                    «Descanso mínimo antes» si entre el fin de su turno y el
+                    inicio del extra hay al menos estas horas; si no, «Dobla
+                    turno». Las incompatibilidades entre turnos se configuran en
+                    <strong>Restricciones entre turnos</strong>.
+                </div>
+                <group>
+                    <field name="min_rest_hours" widget="float_time" />
+                </group>
+                <footer>
+                    <button
+                        name="action_apply"
+                        string="Guardar"
+                        type="object"
+                        class="btn-primary"
+                    />
+                    <button string="Cancelar" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="action_assignment_settings_wizard" model="ir.actions.act_window">
+        <field name="name">Parámetros de adjudicación</field>
+        <field name="res_model">almonte.police.assignment.settings.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="view_schedule_import_wizard_form" model="ir.ui.view">
+        <field name="name">almonte.police.schedule.import.wizard.form</field>
+        <field name="model">almonte.police.schedule.import.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <div class="alert alert-info" role="alert">
+                    <p>
+                        Hoja <strong>Policías</strong>: columnas ID Empleado,
+                        Nombre y Apellidos, Categoría, DIP y Grupo.
+                    </p>
+                    <p class="mb-0">
+                        Hoja <strong>Cuadrante</strong>: columna ID y una
+                        columna por fecha (dd/mm/aaaa) con el código del turno.
+                        Los días incluidos se sobrescriben. Si hay cualquier
+                        error no se importa nada.
+                    </p>
+                </div>
+                <group>
+                    <field name="file" filename="filename" />
+                    <field name="filename" invisible="1" />
+                    <field name="import_employees" />
+                </group>
+                <footer>
+                    <button
+                        name="action_import"
+                        string="Importar"
+                        type="object"
+                        class="btn-primary"
+                    />
+                    <button string="Cancelar" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="action_schedule_import_wizard" model="ir.actions.act_window">
+        <field name="name">Importar cuadrante desde Excel</field>
+        <field name="res_model">almonte.police.schedule.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
 </odoo>

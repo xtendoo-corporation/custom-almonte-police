@@ -2,3 +2,4 @@
 
 from . import test_extra_services
 from . import test_assignment_extensions
+from . import test_meeting_improvements

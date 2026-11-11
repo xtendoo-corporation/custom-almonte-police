@@ -52,4 +52,20 @@
         <field name="name">Grupo 6</field>
         <field name="sequence">80</field>
     </record>
+    <record id="police_group_group_7" model="almonte.police.group">
+        <field name="name">Grupo 7</field>
+        <field name="sequence">90</field>
+    </record>
+    <record id="police_group_group_8" model="almonte.police.group">
+        <field name="name">Grupo 8</field>
+        <field name="sequence">100</field>
+    </record>
+    <record id="police_group_group_9" model="almonte.police.group">
+        <field name="name">Grupo 9</field>
+        <field name="sequence">110</field>
+    </record>
+    <record id="police_group_group_10" model="almonte.police.group">
+        <field name="name">Grupo 10</field>
+        <field name="sequence">120</field>
+    </record>
 </odoo>

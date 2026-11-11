@@ -75,6 +75,14 @@
                         groups="almonte_police_extra_services.group_police_extra_user"
                     />
                     <button
+                        name="action_reopen"
+                        string="Reabrir para ampliar plazas"
+                        type="object"
+                        invisible="state != 'assigned'"
+                        groups="almonte_police_extra_services.group_police_extra_user"
+                        confirm="La oferta vuelve a publicarse. Las adjudicaciones hechas se mantienen y la lista de espera vuelve a competir por las plazas nuevas. Recuerda aumentar el número de plazas. ¿Continuar?"
+                    />
+                    <button
                         name="action_print_decree"
                         string="Imprimir decreto"
                         type="object"

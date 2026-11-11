@@ -2,3 +2,5 @@
 
 from . import baremo_reset_wizard
 from . import schedule_generate_wizard
+from . import assignment_settings_wizard
+from . import schedule_import_wizard

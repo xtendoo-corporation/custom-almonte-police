@@ -35,6 +35,7 @@
         <field name="name">Vacaciones</field>
         <field name="code">VAC</field>
         <field name="state_kind">absence</field>
+        <field name="agent_requestable" eval="True" />
         <field name="color">3</field>
     </record>
     <record id="shift_sick_leave" model="almonte.police.shift.type">
@@ -47,11 +48,13 @@
         <field name="name">Asuntos propios</field>
         <field name="code">AP</field>
         <field name="state_kind">absence</field>
+        <field name="agent_requestable" eval="True" />
         <field name="color">2</field>
     </record>
     <record id="shift_union_hours" model="almonte.police.shift.type">
         <field name="name">Horas sindicales</field>
         <field name="code">HS</field>
+        <field name="alias_codes">HRS</field>
         <field name="state_kind">absence</field>
         <field name="color">5</field>
     </record>
@@ -102,6 +105,24 @@
         <field name="code">L</field>
         <field name="state_kind">rest</field>
         <field name="color">10</field>
+    </record>
+    <record id="shift_medical_morning" model="almonte.police.shift.type">
+        <field name="name">Cita médica (mañana)</field>
+        <field name="code">CMM</field>
+        <field name="state_kind">absence</field>
+        <field name="agent_requestable" eval="True" />
+        <field name="extra_block_mode">selected</field>
+        <field name="blocked_extra_shift_ids" eval="[Command.set([ref('shift_morning')])]" />
+        <field name="color">4</field>
+    </record>
+    <record id="shift_medical_afternoon" model="almonte.police.shift.type">
+        <field name="name">Cita médica (tarde)</field>
+        <field name="code">CMT</field>
+        <field name="state_kind">absence</field>
+        <field name="agent_requestable" eval="True" />
+        <field name="extra_block_mode">selected</field>
+        <field name="blocked_extra_shift_ids" eval="[Command.set([ref('shift_afternoon')])]" />
+        <field name="color">4</field>
     </record>
     <record id="restriction_night_morning" model="almonte.police.shift.restriction">
         <field name="previous_shift_id" ref="shift_night" />

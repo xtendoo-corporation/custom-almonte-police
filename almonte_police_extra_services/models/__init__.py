@@ -9,3 +9,4 @@ from . import extra_service
 from . import extra_service_report
 from . import extra_settlement
 from . import res_company
+from . import absence_request

@@ -936,12 +936,10 @@ class TestAlmontePoliceSelfService(TransactionCase):
                 "work_email": "nuevo.agente@example.com",
             }
         )
-        with patch.object(
-            type(self.env["res.users"]), "action_reset_password"
-        ) as mock_reset:
-            employee.with_user(self.manager_user).action_create_police_user()
-        mock_reset.assert_called_once()
+        action = employee.with_user(self.manager_user).action_create_police_user()
+        self.assertEqual(action["tag"], "display_notification")
         self.assertTrue(employee.user_id)
+        self.assertEqual(employee.user_id.login, "DIP-9203")
         self.assertIn(self.agent_group, employee.user_id.group_ids)
 
     def test_non_manager_cannot_create_police_user(self):
