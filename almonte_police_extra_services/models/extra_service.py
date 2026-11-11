@@ -5,6 +5,23 @@ from datetime import timedelta
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError, ValidationError
 
+EXCLUDED_PRIORITY = 999999
+MIN_FREE_HOURS_BEFORE = 8
+PRIORITY_TIERS = [
+    ("1_free", "1. Libre"),
+    ("2_rested", "2. 8 h libres antes"),
+    ("3_double", "3. Dobla turno"),
+    ("4_restricted", "4. Restringido"),
+    ("5_unavailable", "5. No disponible"),
+]
+ELIGIBLE_TIERS = ("1_free", "2_rested", "3_double")
+RESOLVED_SIGNUP_STATES = (
+    "assigned_free",
+    "assigned_double",
+    "waiting_free",
+    "waiting_double",
+)
+
 
 class PoliceExtraService(models.Model):
     _name = "almonte.police.extra.service"
@@ -37,15 +54,25 @@ class PoliceExtraService(models.Model):
         required=True,
         ondelete="restrict",
     )
-    police_category = fields.Selection(
-        selection=[
-            ("inspector", "Inspectora"),
-            ("subinspector", "Subinspector"),
-            ("officer", "Oficial Policía"),
-            ("organizational_officer", "Oficial Policía Organizativo"),
-            ("police", "Policía"),
-        ],
-        string="Puesto / categoría",
+    police_category_ids = fields.Many2many(
+        "almonte.police.category",
+        "almonte_police_extra_service_category_rel",
+        "service_id",
+        "category_id",
+        string="Categorías permitidas",
+        help="Solo los agentes de estas categorías pueden inscribirse. "
+        "Si se deja vacío, pueden inscribirse agentes de todas las categorías.",
+    )
+    signup_deadline = fields.Datetime(
+        string="Límite de inscripción",
+        tracking=True,
+        help="Fecha y hora a partir de la cual los agentes ya no pueden "
+        "apuntarse ni retirarse. Si se deja vacío, el plazo sigue abierto "
+        "mientras la oferta esté publicada.",
+    )
+    is_signup_open = fields.Boolean(
+        string="Plazo abierto",
+        compute="_compute_is_signup_open",
     )
     vacancies = fields.Integer(string="Plazas", required=True, default=1)
     hours = fields.Float(string="Horas", default=0.0)
@@ -93,7 +120,21 @@ class PoliceExtraService(models.Model):
         compute="_compute_my_signup_id",
     )
 
-    @api.depends("signup_ids.employee_id", "state")
+    @api.depends("state", "signup_deadline")
+    def _compute_is_signup_open(self):
+        now = fields.Datetime.now()
+        for record in self:
+            record.is_signup_open = record.state == "published" and (
+                not record.signup_deadline or record.signup_deadline >= now
+            )
+
+    @api.depends(
+        "signup_ids.employee_id",
+        "state",
+        "signup_deadline",
+        "police_category_ids",
+    )
+    @api.depends_context("uid")
     def _compute_my_signup_id(self):
         employee = self.env.user.employee_id
         for record in self:
@@ -106,7 +147,9 @@ class PoliceExtraService(models.Model):
             )
             record.my_signup_id = signup[:1]
             record.can_volunteer = bool(
-                employee and record.state == "published" and not signup
+                employee
+                and not signup
+                and not record._get_signup_block_reason(employee)
             )
 
     @api.depends("signup_ids.amount", "signup_ids.state")
@@ -128,6 +171,84 @@ class PoliceExtraService(models.Model):
                 vals["name"] = sequence.next_by_id()
         return super().create(vals_list)
 
+    def _is_category_allowed(self, employee):
+        self.ensure_one()
+        return (
+            not self.police_category_ids
+            or employee.police_category_id in self.police_category_ids
+        )
+
+    def _get_signup_block_reason(self, employee):
+        """Motivo por el que ``employee`` no puede apuntarse por sí mismo."""
+        self.ensure_one()
+        if self.state != "published":
+            return _("Solo puedes apuntarte a servicios publicados.")
+        if not self.is_signup_open:
+            return _("El plazo de inscripción de este servicio ha finalizado.")
+        if not self._is_category_allowed(employee):
+            return _("Tu categoría policial no puede inscribirse en este servicio.")
+        conflict = self._get_conflicting_history(employee)
+        if conflict:
+            return _(
+                "Ya tienes adjudicado el servicio %s en la misma franja horaria.",
+                conflict.service_id.name,
+            )
+        return False
+
+    def _get_conflicting_history(self, employee):
+        """Servicio extra ya adjudicado al agente que solapa con esta oferta.
+
+        Se considera solape tener otro servicio el mismo día y turno, o
+        cualquier servicio de los días contiguos cuyo horario se cruce con
+        el de esta oferta (p. ej. una Noche del día anterior).
+        """
+        self.ensure_one()
+        histories = (
+            self.env["almonte.police.extra.service.history"]
+            .sudo()
+            .search(
+                [
+                    ("employee_id", "=", employee.id),
+                    ("origin", "=", "service"),
+                    ("service_id", "!=", self._origin.id or False),
+                    ("service_date", ">=", self.service_date - timedelta(days=1)),
+                    ("service_date", "<=", self.service_date + timedelta(days=1)),
+                ]
+            )
+        )
+        service_shift = self.required_shift_id
+        service_interval = service_shift._get_interval()
+        for history in histories:
+            other_shift = history.service_id.required_shift_id
+            day_offset = (history.service_date - self.service_date).days
+            if not day_offset and other_shift == service_shift:
+                return history
+            other_interval = other_shift._get_interval(day_offset=day_offset)
+            if (
+                service_interval
+                and other_interval
+                and other_interval[0] < service_interval[1]
+                and service_interval[0] < other_interval[1]
+            ):
+                return history
+        return histories.browse()
+
+    @api.constrains("signup_deadline", "service_date")
+    def _check_signup_deadline(self):
+        for record in self:
+            if not record.signup_deadline:
+                continue
+            deadline_date = fields.Datetime.context_timestamp(
+                record, record.signup_deadline
+            ).date()
+            if deadline_date > record.service_date:
+                raise ValidationError(
+                    _(
+                        "El límite de inscripción no puede ser posterior a la "
+                        "fecha del servicio."
+                    )
+                )
+
     @api.constrains("vacancies", "hours")
     def _check_positive_values(self):
         for record in self:
@@ -138,6 +259,11 @@ class PoliceExtraService(models.Model):
 
     def action_publish(self):
         self.write({"state": "published"})
+
+    def action_print_decree(self):
+        return self.env.ref(
+            "almonte_police_extra_services.action_report_extra_service_decree"
+        ).report_action(self)
 
     def action_volunteer(self):
         """Autoinscripción de un agente como voluntario en un servicio publicado.
@@ -152,10 +278,11 @@ class PoliceExtraService(models.Model):
             raise UserError(
                 _("Tu usuario no está vinculado a ningún agente de la Policía Local.")
             )
-        if self.state != "published":
-            raise UserError(_("Solo puedes apuntarte a servicios publicados."))
         if self.signup_ids.filtered(lambda s: s.employee_id == employee):
             raise UserError(_("Ya estás inscrito en este servicio."))
+        block_reason = self._get_signup_block_reason(employee)
+        if block_reason:
+            raise UserError(block_reason)
         self.env["almonte.police.extra.service.signup"].create(
             {"service_id": self.id, "employee_id": employee.id}
         )
@@ -174,12 +301,17 @@ class PoliceExtraService(models.Model):
         for service in self:
             if service.state not in ("published", "assigned"):
                 raise UserError(_("Solo se pueden adjudicar ofertas publicadas."))
+            pending = service.signup_ids.filtered(
+                lambda signup: signup.state not in RESOLVED_SIGNUP_STATES
+            )
+            pending._compute_availability()
+            pending._compute_state()
             candidates = service.signup_ids.filtered(
                 lambda signup: signup.state in ("eligible_free", "eligible_double")
             )
-            candidates.sorted(key=lambda signup: (signup.priority_score, signup.id))
-            ordered = sorted(candidates, key=lambda signup: signup.priority_score)
-            assigned = ordered[: service.vacancies]
+            assigned = candidates.sorted(
+                key=lambda signup: (signup.priority_score, signup.id)
+            )[: service.vacancies]
             for signup in service.signup_ids:
                 if signup in assigned:
                     signup.state = (
@@ -187,6 +319,7 @@ class PoliceExtraService(models.Model):
                     )
                     self.env["almonte.police.extra.service.history"].create(
                         {
+                            "origin": "service",
                             "service_id": service.id,
                             "employee_id": signup.employee_id.id,
                             "service_date": service.service_date,
@@ -237,14 +370,25 @@ class PoliceExtraServiceSignup(models.Model):
         string="Turno del día",
         compute="_compute_availability",
     )
-    accumulated_extra_days = fields.Float(
-        string="Extras acumulados",
+    quarter_service_count = fields.Float(
+        string="Servicios en el trimestre",
         compute="_compute_availability",
+        digits=(16, 1),
+        help="Servicios extraordinarios realizados por el agente en el "
+        "trimestre de la oferta (desde la fecha de puesta a cero del baremo, "
+        "si es posterior), sumando los días de extras atrasados. En igualdad "
+        "de condiciones tiene prioridad quien menos servicios haya realizado.",
     )
     is_free = fields.Boolean(string="Está libre", compute="_compute_availability")
     availability_status = fields.Char(
         string="Estado de disponibilidad",
         compute="_compute_availability",
+    )
+    priority_tier = fields.Selection(
+        selection=PRIORITY_TIERS,
+        string="Prelación",
+        compute="_compute_availability",
+        store=True,
     )
     priority_score = fields.Integer(
         string="Puntuación de prioridad",
@@ -310,10 +454,13 @@ class PoliceExtraServiceSignup(models.Model):
                     raise AccessError(
                         _("Solo puedes inscribirte tú mismo como agente voluntario.")
                     )
-                if not service or service.state != "published":
+                if not service:
                     raise UserError(
                         _("Solo puedes inscribirte en servicios publicados.")
                     )
+                block_reason = service._get_signup_block_reason(employee)
+                if block_reason:
+                    raise UserError(block_reason)
         next_row_by_service = {}
         for vals in vals_list:
             if vals.get("row_number", 0):
@@ -332,6 +479,19 @@ class PoliceExtraServiceSignup(models.Model):
             next_row_by_service[service_id] += 1
         return super().create(vals_list)
 
+    @api.constrains("service_id", "employee_id")
+    def _check_employee_category_allowed(self):
+        for signup in self:
+            if not signup.service_id._is_category_allowed(signup.employee_id):
+                raise ValidationError(
+                    _(
+                        "La categoría policial de %(employee)s no está "
+                        "permitida en el servicio %(service)s.",
+                        employee=signup.employee_id.name,
+                        service=signup.service_id.name,
+                    )
+                )
+
     def action_withdraw(self):
         """Permite a un agente retirar su propia inscripción no resuelta.
 
@@ -343,13 +503,15 @@ class PoliceExtraServiceSignup(models.Model):
         self.ensure_one()
         if not self.employee_id.user_id or self.employee_id.user_id != self.env.user:
             raise AccessError(_("Solo puedes retirar tu propia inscripción."))
-        if self.state in (
-            "assigned_free",
-            "assigned_double",
-            "waiting_free",
-            "waiting_double",
-        ):
+        if self.state in RESOLVED_SIGNUP_STATES:
             raise UserError(_("La inscripción ya está resuelta y no se puede retirar."))
+        if not self.service_id.is_signup_open:
+            raise UserError(
+                _(
+                    "El plazo de inscripción ha finalizado; ya no puedes "
+                    "retirar tu inscripción."
+                )
+            )
         self.sudo().unlink()
         return {"type": "ir.actions.client", "tag": "reload"}
 
@@ -404,52 +566,108 @@ class PoliceExtraServiceSignup(models.Model):
             "target": "new",
         }
 
-    def _historical_extra_days(self):
+    def _quarter_service_count(self):
         self.ensure_one()
         service_date = self.service_id.service_date
-        quarter_start_month = ((service_date.month - 1) // 3) * 3 + 1
         quarter_start = service_date.replace(
-            month=quarter_start_month,
+            month=((service_date.month - 1) // 3) * 3 + 1,
             day=1,
         )
-        if quarter_start_month == 10:
-            next_quarter = service_date.replace(
-                year=service_date.year + 1,
-                month=1,
-                day=1,
-            )
+        if quarter_start.month == 10:
+            next_quarter = quarter_start.replace(year=quarter_start.year + 1, month=1)
         else:
-            next_quarter = service_date.replace(
-                month=quarter_start_month + 3,
-                day=1,
-            )
-        return sum(
+            next_quarter = quarter_start.replace(month=quarter_start.month + 3)
+        reset_date = self.env.company.police_baremo_reset_date
+        window_start = max(quarter_start, reset_date) if reset_date else quarter_start
+        histories = (
             self.env["almonte.police.extra.service.history"]
+            .sudo()
             .search(
                 [
                     ("employee_id", "=", self.employee_id.id),
-                    ("service_date", ">=", quarter_start),
+                    ("service_date", ">=", window_start),
                     ("service_date", "<", next_quarter),
+                    "|",
+                    ("service_id", "=", False),
+                    ("service_id", "!=", self.service_id._origin.id or False),
                 ]
             )
-            .mapped("days")
         )
+        return sum(history._get_baremo_weight() for history in histories)
 
-    def _is_restricted(self, current_shift, previous_shift):
-        service = self.service_id
-        if not current_shift:
-            return True, "Sin cuadrante"
-        if current_shift.state_kind == "absence":
-            return True, current_shift.code
-        restriction = self.env["almonte.police.shift.restriction"].search(
+    def _get_shift_restriction(self, previous_shift):
+        return self.env["almonte.police.shift.restriction"].search(
             [
                 ("previous_shift_id", "=", previous_shift.id if previous_shift else 0),
-                ("required_shift_id", "=", service.required_shift_id.id),
+                ("required_shift_id", "=", self.service_id.required_shift_id.id),
                 ("active", "=", True),
             ],
             limit=1,
         )
-        return bool(restriction), restriction.reason if restriction else ""
+
+    def _get_priority_tier(self, current_shift, previous_shift):
+        """Aplica los criterios oficiales de prelación del Reglamento.
+
+        Devuelve una tupla ``(nivel, estado legible)``:
+
+        1. Libre ese día.
+        2. Trabaja ese día pero tiene al menos 8 horas libres antes del servicio.
+        3. Dobla turno (continuo o con menos de 8 horas libres antes).
+        4. Restringido: descanso obligatorio (p. ej. Noche → Mañana) o el
+           servicio coincide con su propio turno.
+        5. No disponible: permisos, bajas o sin cuadrante.
+        """
+        self.ensure_one()
+        service_shift = self.service_id.required_shift_id
+        if not current_shift:
+            return "5_unavailable", _("NO DISPONIBLE (sin cuadrante)")
+        if current_shift.state_kind == "absence":
+            return "5_unavailable", _("NO DISPONIBLE (%s)", current_shift.code)
+        conflict = self.service_id._get_conflicting_history(self.employee_id)
+        if conflict:
+            return "4_restricted", _(
+                "RESTRINGIDO (ya adjudicado en %s)", conflict.service_id.name
+            )
+        if self._get_shift_restriction(previous_shift):
+            return "4_restricted", _(
+                "RESTRINGIDO (%(previous)s a %(service)s)",
+                previous=previous_shift.name,
+                service=service_shift.name,
+            )
+        if current_shift.state_kind == "rest":
+            return "1_free", _("LIBRE")
+        service_interval = service_shift._get_interval()
+        work_intervals = [
+            interval
+            for interval in (
+                current_shift._get_interval(),
+                previous_shift._get_interval(day_offset=-1)
+                if previous_shift and previous_shift.state_kind == "work"
+                else None,
+            )
+            if interval
+        ]
+        if not service_interval or not current_shift._get_interval():
+            return "3_double", _("DOBLA TURNO")
+        service_start, service_end = service_interval
+        if any(
+            start < service_end and service_start < end for start, end in work_intervals
+        ):
+            return "4_restricted", _(
+                "RESTRINGIDO (coincide con su turno de %s)", current_shift.name
+            )
+        if any(
+            end == service_start or start == service_end
+            for start, end in work_intervals
+        ):
+            return "3_double", _("DOBLA TURNO")
+        previous_ends = [end for _start, end in work_intervals if end <= service_start]
+        free_hours_before = (
+            service_start - max(previous_ends) if previous_ends else float("inf")
+        )
+        if free_hours_before >= MIN_FREE_HOURS_BEFORE:
+            return "2_rested", _("8 H LIBRES ANTES")
+        return "3_double", _("DOBLA TURNO")
 
     @api.depends(
         "employee_id",
@@ -459,6 +677,7 @@ class PoliceExtraServiceSignup(models.Model):
     )
     def _compute_availability(self):
         assignment_model = self.env["almonte.police.schedule.assignment"]
+        tier_weight = {tier: index for index, tier in enumerate(ELIGIBLE_TIERS)}
         for signup in self:
             current = assignment_model.get_for_employee_date(
                 signup.employee_id, signup.service_id.service_date
@@ -467,32 +686,20 @@ class PoliceExtraServiceSignup(models.Model):
                 signup.employee_id,
                 signup.service_id.service_date - timedelta(days=1),
             ).shift_type_id
-            restricted, reason = signup._is_restricted(current, previous)
+            tier, status = signup._get_priority_tier(current, previous)
             signup.current_shift_id = current
             signup.previous_shift_id = previous
-            signup.accumulated_extra_days = signup._historical_extra_days()
-            signup.is_free = bool(current and current.state_kind == "rest")
-            signup.availability_status = (
-                f"NO DISPONIBLE ({current.code})"
-                if restricted and current.state_kind == "absence"
-                else "RESTRINGIDO (Noche a Mañana)"
-                if restricted
-                else "DISPONIBLE LIBRE"
-                if signup.is_free
-                else "DISPONIBLE DOBLANDO"
+            signup.quarter_service_count = signup._quarter_service_count()
+            signup.is_free = tier == "1_free"
+            signup.priority_tier = tier
+            signup.availability_status = status
+            signup.priority_score = (
+                tier_weight[tier] * 100000
+                + round(signup.quarter_service_count * 1000)
+                + signup.row_number
+                if tier in ELIGIBLE_TIERS
+                else EXCLUDED_PRIORITY
             )
-            if restricted:
-                signup.priority_score = 99999
-            elif signup.is_free:
-                signup.priority_score = (
-                    int(signup.accumulated_extra_days * 1000) + signup.row_number
-                )
-            else:
-                signup.priority_score = (
-                    50000
-                    + int(signup.accumulated_extra_days * 1000)
-                    + signup.row_number
-                )
 
     @api.depends("priority_score", "service_id.signup_ids.priority_score")
     def _compute_rank(self):
@@ -500,44 +707,32 @@ class PoliceExtraServiceSignup(models.Model):
             scores = [
                 item.priority_score
                 for item in signup.service_id.signup_ids
-                if item.priority_score < 99999
+                if item.priority_score < EXCLUDED_PRIORITY
             ]
             signup.rank = (
                 1 + sum(score < signup.priority_score for score in scores)
-                if signup.priority_score < 99999
+                if signup.priority_score < EXCLUDED_PRIORITY
                 else 0
             )
 
-    @api.depends("availability_status", "is_free", "priority_score")
+    @api.depends("priority_tier")
     def _compute_state(self):
         for signup in self:
-            if signup.state in (
-                "assigned_free",
-                "assigned_double",
-                "waiting_free",
-                "waiting_double",
-            ):
+            if signup.state in RESOLVED_SIGNUP_STATES:
                 continue
-            if signup.priority_score == 99999:
-                signup.state = (
-                    "restricted"
-                    if signup.availability_status.startswith("RESTRINGIDO")
-                    else "unavailable"
-                )
-            elif signup.is_free:
+            if signup.priority_tier == "4_restricted":
+                signup.state = "restricted"
+            elif signup.priority_tier == "5_unavailable":
+                signup.state = "unavailable"
+            elif signup.priority_tier == "1_free":
                 signup.state = "eligible_free"
             else:
                 signup.state = "eligible_double"
 
-    @api.depends("service_id.service_type_id", "service_id.hours")
+    @api.depends("service_id.service_type_id.unit_price")
     def _compute_amount(self):
         for signup in self:
-            service_type = signup.service_id.service_type_id
-            signup.amount = (
-                service_type.unit_price
-                if service_type.pricing_mode == "fixed"
-                else service_type.unit_price * signup.service_id.hours
-            )
+            signup.amount = signup.service_id.service_type_id.unit_price
 
 
 class PoliceExtraServiceHistory(models.Model):
@@ -545,17 +740,33 @@ class PoliceExtraServiceHistory(models.Model):
     _description = "Histórico de servicios extraordinarios realizados"
     _order = "service_date desc, id desc"
 
+    origin = fields.Selection(
+        selection=[
+            ("service", "Servicio adjudicado"),
+            ("backlog", "Extra atrasado"),
+        ],
+        string="Origen",
+        required=True,
+        default="service",
+        help="Los extras atrasados son servicios realizados antes de usar la "
+        "aplicación (o no registrados en ella). Computan para el baremo con "
+        "sus días y se incluyen en las liquidaciones con su cuantía.",
+    )
     service_id = fields.Many2one(
         "almonte.police.extra.service",
-        required=True,
         ondelete="cascade",
     )
-    employee_id = fields.Many2one("hr.employee", required=True, ondelete="restrict")
+    employee_id = fields.Many2one(
+        "hr.employee",
+        string="Agente",
+        required=True,
+        ondelete="restrict",
+        domain=[("police_category_id", "!=", False)],
+    )
     service_date = fields.Date(string="Fecha del servicio", required=True, index=True)
     service_type_id = fields.Many2one(
         "almonte.police.service.type",
         string="Tipo de servicio",
-        required=True,
         ondelete="restrict",
     )
     hours = fields.Float(string="Horas")
@@ -566,8 +777,11 @@ class PoliceExtraServiceHistory(models.Model):
         required=True,
     )
     currency_id = fields.Many2one(
-        related="service_type_id.currency_id",
-        readonly=True,
+        "res.currency",
+        compute="_compute_currency_id",
+        store=True,
+        readonly=False,
+        precompute=True,
     )
     notes = fields.Text(string="Observaciones")
 
@@ -575,3 +789,42 @@ class PoliceExtraServiceHistory(models.Model):
         "UNIQUE(service_id, employee_id)",
         "El histórico del servicio para este agente ya existe.",
     )
+
+    @api.depends("service_type_id.currency_id")
+    def _compute_currency_id(self):
+        for history in self:
+            history.currency_id = (
+                history.service_type_id.currency_id
+                or history.currency_id
+                or self.env.company.currency_id
+            )
+
+    @api.constrains("origin", "service_id", "service_type_id")
+    def _check_origin_fields(self):
+        for history in self:
+            if history.origin == "service" and not (
+                history.service_id and history.service_type_id
+            ):
+                raise ValidationError(
+                    _(
+                        "Un histórico de servicio adjudicado debe indicar el "
+                        "servicio y su tipo."
+                    )
+                )
+
+    @api.constrains("origin", "days", "amount")
+    def _check_backlog_values(self):
+        for history in self.filtered(lambda item: item.origin == "backlog"):
+            if history.days <= 0:
+                raise ValidationError(
+                    _("Los días de un extra atrasado deben ser mayores que cero.")
+                )
+            if history.amount < 0:
+                raise ValidationError(
+                    _("La cuantía de los extras atrasados no puede ser negativa.")
+                )
+
+    def _get_baremo_weight(self):
+        """Peso en el baremo: 1 por servicio adjudicado, los días si es atrasado."""
+        self.ensure_one()
+        return self.days if self.origin == "backlog" else 1.0

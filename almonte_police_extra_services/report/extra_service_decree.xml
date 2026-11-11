@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="action_report_extra_service_decree" model="ir.actions.report">
+        <field name="name">Decreto de adjudicación (PDF)</field>
+        <field name="model">almonte.police.extra.service</field>
+        <field name="report_type">qweb-pdf</field>
+        <field
+            name="report_name"
+        >almonte_police_extra_services.report_extra_service_decree</field>
+        <field
+            name="report_file"
+        >almonte_police_extra_services.report_extra_service_decree</field>
+        <field name="print_report_name">'Decreto %s' % object.name</field>
+        <field name="binding_model_id" ref="model_almonte_police_extra_service" />
+        <field name="binding_type">report</field>
+    </record>
+    <template id="report_extra_service_decree">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="service">
+                <t t-call="web.external_layout">
+                    <t
+                        t-set="assigned_signups"
+                        t-value="service.signup_ids.filtered(lambda signup: signup.state in ('assigned_free', 'assigned_double')).sorted('rank')"
+                    />
+                    <t
+                        t-set="waiting_signups"
+                        t-value="service.signup_ids.filtered(lambda signup: signup.state in ('waiting_free', 'waiting_double')).sorted('rank')"
+                    />
+                    <div class="page">
+                        <p class="text-center fw-bold mb-0">
+                            AYUNTAMIENTO DE ALMONTE
+                        </p>
+                        <p class="text-center mb-4">Jefatura de la Policía Local</p>
+                        <h4 class="text-center">
+                            DECRETO DE ADJUDICACIÓN DE SERVICIO EXTRAORDINARIO
+                        </h4>
+                        <p class="text-center">
+                            Oferta <strong t-field="service.name" />
+                            <t t-if="service.state not in ('assigned', 'closed')">
+                                <span class="badge text-bg-warning">
+                                    PENDIENTE DE ADJUDICAR
+                                </span>
+                            </t>
+                        </p>
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td class="fw-bold">Fecha del servicio</td>
+                                <td><span t-field="service.service_date" /></td>
+                                <td class="fw-bold">Turno</td>
+                                <td><span t-field="service.required_shift_id.name" /></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Tipo de servicio</td>
+                                <td><span t-field="service.service_type_id.name" /></td>
+                                <td class="fw-bold">Plazas</td>
+                                <td><span t-field="service.vacancies" /></td>
+                            </tr>
+                            <tr t-if="service.department">
+                                <td class="fw-bold">Motivo / departamento</td>
+                                <td colspan="3"><span t-field="service.department" /></td>
+                            </tr>
+                        </table>
+                        <p>
+                            Vistas las inscripciones presentadas y aplicados los
+                            criterios de prelación del Reglamento (libre, 8 horas
+                            libres antes, dobla turno y, a igualdad, menor número de
+                            servicios en el trimestre), esta Jefatura
+                            <strong>RESUELVE</strong> adjudicar el servicio a los
+                            siguientes agentes:
+                        </p>
+                        <table class="table table-sm o_main_table">
+                            <thead>
+                                <tr>
+                                    <th>Orden</th>
+                                    <th>DIP</th>
+                                    <th>Agente</th>
+                                    <th>Categoría</th>
+                                    <th>Situación</th>
+                                    <th class="text-end">Importe</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="assigned_signups" t-as="signup">
+                                    <td><span t-field="signup.rank" /></td>
+                                    <td><span t-field="signup.employee_id.police_dip" /></td>
+                                    <td><span t-field="signup.employee_id.name" /></td>
+                                    <td>
+                                        <span
+                                            t-field="signup.employee_id.police_category_id.name"
+                                        />
+                                    </td>
+                                    <td><span t-field="signup.availability_status" /></td>
+                                    <td class="text-end">
+                                        <span t-field="signup.amount" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="fw-bold">
+                                    <td colspan="5">TOTAL</td>
+                                    <td class="text-end">
+                                        <span t-field="service.total_amount" />
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        <p t-if="not assigned_signups">
+                            No hay agentes adjudicados en este servicio.
+                        </p>
+                        <t t-if="waiting_signups">
+                            <p>Quedan en lista de espera, por este orden:</p>
+                            <ol>
+                                <li t-foreach="waiting_signups" t-as="signup">
+                                    <span t-field="signup.employee_id.name" />
+                                    (<span t-field="signup.availability_status" />)
+                                </li>
+                            </ol>
+                        </t>
+                        <p class="mt-5">
+                            En Almonte, a
+                            <span
+                                t-out="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y')"
+                            />.
+                        </p>
+                        <p class="mt-5 text-center">EL JEFE DE LA POLICÍA LOCAL</p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

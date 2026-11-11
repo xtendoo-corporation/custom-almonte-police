@@ -121,8 +121,8 @@ José María y forma parte del alcance inicial.
   `hr_holidays` ni `hr_attendance`.
 - **Agentes sobre `hr.employee`:** se añaden categoría policial, DIP, grupo e ID
   empleado policial.
-- **Cálculo económico desde el primer diseño:** tarifa fija o tarifa por horas, según la
-  configuración del tipo de servicio.
+- **Cálculo económico desde el primer diseño:** el importe es siempre el total fijo del
+  servicio configurado en su tipo; nunca se calcula por horas.
 
 ## 5. Modelo de datos propuesto
 
@@ -132,7 +132,7 @@ José María y forma parte del alcance inicial.
 | `almonte.police.shift.type`            | Código, nombre, tipo de estado, noche y orden.        | Códigos del `Cuadrante`. |
 | `almonte.police.shift.restriction`     | Incompatibilidades entre turno anterior y requerido.  | Regla de descanso.       |
 | `almonte.police.schedule.assignment`   | Una asignación por agente y fecha.                    | Rejilla del `Cuadrante`. |
-| `almonte.police.service.type`          | Tipo de servicio, tarifa fija o por hora y moneda.    | Hoja de precios nueva.   |
+| `almonte.police.service.type`          | Tipo de servicio, importe total fijo y moneda.        | Hoja de precios nueva.   |
 | `almonte.police.extra.service`         | Oferta, fecha, turno, plazas, tipo y motivo.          | Ofertas de extras.       |
 | `almonte.police.extra.service.signup`  | Inscripción, disponibilidad, score, ranking y estado. | Registro de inscritos.   |
 | `almonte.police.extra.service.history` | Servicio realizado, horas, importe y agente.          | `Historico_Extras`.      |
@@ -157,11 +157,31 @@ José María y forma parte del alcance inicial.
 - El score y el ranking se recalculan al inscribir o actualizar la oferta.
 - El botón **Adjudicar plazas** selecciona por ranking y genera automáticamente el
   histórico de las plazas adjudicadas.
-- El importe se calcula mediante tarifa fija o `horas × tarifa_hora`.
+- El importe de cada servicio es el total fijo de su tipo de servicio (nunca por horas).
 - El resumen permite consultar servicios, horas e importes por policía y periodo.
-- La prioridad de reparto suma únicamente los servicios del trimestre de la oferta. El
+- La prioridad de reparto cuenta únicamente los servicios del trimestre de la oferta. El
   histórico anterior se conserva y puede consultarse, pero no contamina el cálculo del
   trimestre siguiente.
+- **Orden de prelación** (cada tipo de turno de trabajo tiene horario: Mañana 07-15,
+  Tarde 15-23, Noche 23-07):
+  1. Libre ese día.
+  2. Trabaja ese día pero tiene al menos 8 horas libres antes del servicio (p. ej.
+     Mañana → extra de Noche).
+  3. Dobla turno: continuo (Mañana-Tarde, Tarde-Noche, Tarde previa a Noche) o con
+     menos de 8 horas libres antes.
+  4. Restringido: descanso obligatorio del catálogo (Noche → Mañana) o el extra
+     coincide con su propio turno. Excluido.
+  5. Permisos, bajas, vacaciones, asuntos propios, horas sindicales o sin cuadrante.
+     Excluido.
+
+  Dentro de cada nivel tiene prioridad quien menos servicios haya realizado en el
+  trimestre y, a igualdad, el orden de inscripción. Al adjudicar se recalcula la
+  disponibilidad con el cuadrante vigente.
+- **Resumen y liquidación:** cada día 1 se genera automáticamente la liquidación de la
+  plantilla completa del mes anterior. También pueden crearse liquidaciones anuales o
+  de un solo policía. Solo incluyen agentes con servicios realizados (DNI, funcionario,
+  categoría, grupo, días e importe). Se exportan a Excel (`report_xlsx`) y a PDF
+  oficial; una vez confirmadas quedan bloqueadas.
 
 ## 7. Ventajas frente al Excel actual
 
@@ -258,3 +278,30 @@ establece a través del enlace de invitación que recibe por correo.
 email de trabajo (no existe un patrón seguro de login). Se ha optado por dar la
 herramienta al responsable para darlos de alta uno a uno según se vaya confirmando el
 email de cada agente con el Ayuntamiento.
+
+## Perfil de agente (sin privilegios de administración)
+
+- **Mi cuadrante**: calendario mensual de sus propios turnos con leyenda
+  (p. ej. `M: Mañana (07:00-15:00)`); solo lectura.
+- **Adjudicaciones**: todos los servicios adjudicados o cerrados (y los publicados
+  de su categoría) con los policías apuntados, su orden, prioridad y estado; solo
+  lectura.
+- **Mi liquidación**: sus líneas de liquidación mensual, únicamente cuando la
+  liquidación está confirmada por coordinación.
+
+## Mejoras incorporadas tras el estudio de la app servicios-extras.vercel.app
+
+1. **Exclusión por solape**: un agente con un servicio extra ya adjudicado en la
+   misma fecha y turno (o cuyo horario se cruza, p. ej. una Noche del día anterior)
+   queda *Restringido* en nuevas ofertas y no puede apuntarse.
+2. **Poner a cero baremo a fecha** (Configuración): el baremo computa desde la
+   fecha posterior entre el inicio del trimestre y la fecha de puesta a cero. El
+   histórico no se borra. El valor se guarda en la compañía, no en el navegador.
+3. **Extras atrasados** (Informes): días y cuantía por agente. Cada día computa
+   como un servicio en el baremo y la cuantía se suma a la liquidación del mes de
+   la fecha de referencia.
+4. **Generar cuadrante por ciclos**: 6-5 (2M-2T-2N-5L), 5-2 (lunes a viernes de
+   mañana) y 7-7, con día del ciclo de inicio, alcance (mes, año o 365 días) y
+   opción de conservar permisos y bajas.
+5. **PNR (permiso no retribuido)** como ausencia y **Decreto de adjudicación** en
+   PDF desde la oferta adjudicada.

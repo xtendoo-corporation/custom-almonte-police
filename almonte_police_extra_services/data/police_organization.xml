@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo noupdate="1">
+    <record id="police_category_inspector" model="almonte.police.category">
+        <field name="name">Inspectora</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="police_category_subinspector" model="almonte.police.category">
+        <field name="name">Subinspector</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="police_category_officer" model="almonte.police.category">
+        <field name="name">Oficial Policía</field>
+        <field name="sequence">30</field>
+    </record>
+    <record id="police_category_organizational_officer" model="almonte.police.category">
+        <field name="name">Oficial Policía Organizativo</field>
+        <field name="sequence">40</field>
+    </record>
+    <record id="police_category_police" model="almonte.police.category">
+        <field name="name">Policía</field>
+        <field name="sequence">50</field>
+    </record>
+    <record id="police_group_jefatura" model="almonte.police.group">
+        <field name="name">Jefatura</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="police_group_prommesas" model="almonte.police.group">
+        <field name="name">Prommesas</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="police_group_group_1" model="almonte.police.group">
+        <field name="name">Grupo 1</field>
+        <field name="sequence">30</field>
+    </record>
+    <record id="police_group_group_2" model="almonte.police.group">
+        <field name="name">Grupo 2</field>
+        <field name="sequence">40</field>
+    </record>
+    <record id="police_group_group_3" model="almonte.police.group">
+        <field name="name">Grupo 3</field>
+        <field name="sequence">50</field>
+    </record>
+    <record id="police_group_group_4" model="almonte.police.group">
+        <field name="name">Grupo 4</field>
+        <field name="sequence">60</field>
+    </record>
+    <record id="police_group_group_5" model="almonte.police.group">
+        <field name="name">Grupo 5</field>
+        <field name="sequence">70</field>
+    </record>
+    <record id="police_group_group_6" model="almonte.police.group">
+        <field name="name">Grupo 6</field>
+        <field name="sequence">80</field>
+    </record>
+</odoo>

@@ -3,18 +3,24 @@
     <record id="shift_morning" model="almonte.police.shift.type">
         <field name="name">Mañana</field>
         <field name="code">M</field>
+        <field name="start_hour">7</field>
+        <field name="end_hour">15</field>
         <field name="state_kind">work</field>
         <field name="color">4</field>
     </record>
     <record id="shift_afternoon" model="almonte.police.shift.type">
         <field name="name">Tarde</field>
         <field name="code">T</field>
+        <field name="start_hour">15</field>
+        <field name="end_hour">23</field>
         <field name="state_kind">work</field>
         <field name="color">6</field>
     </record>
     <record id="shift_night" model="almonte.police.shift.type">
         <field name="name">Noche</field>
         <field name="code">N</field>
+        <field name="start_hour">23</field>
+        <field name="end_hour">7</field>
         <field name="state_kind">work</field>
         <field name="is_night">1</field>
         <field name="color">9</field>
@@ -82,6 +88,12 @@
     <record id="shift_free_disposition" model="almonte.police.shift.type">
         <field name="name">Libre disposición</field>
         <field name="code">LD</field>
+        <field name="state_kind">absence</field>
+        <field name="color">2</field>
+    </record>
+    <record id="shift_unpaid_leave" model="almonte.police.shift.type">
+        <field name="name">Permiso no retribuido</field>
+        <field name="code">PNR</field>
         <field name="state_kind">absence</field>
         <field name="color">2</field>
     </record>

@@ -73,7 +73,7 @@ class PoliceScheduleAssignment(models.Model):
     @api.constrains("employee_id")
     def _check_employee_is_police(self):
         for record in self:
-            if not record.employee_id.police_category:
+            if not record.employee_id.police_category_id:
                 raise ValidationError(
                     _("El agente debe tener informada la categoría policial.")
                 )

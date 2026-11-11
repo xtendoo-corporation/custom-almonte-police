@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="action_report_extra_settlement" model="ir.actions.report">
+        <field name="name">Documento oficial de liquidación (PDF)</field>
+        <field name="model">almonte.police.extra.settlement</field>
+        <field name="report_type">qweb-pdf</field>
+        <field
+            name="report_name"
+        >almonte_police_extra_services.report_extra_settlement</field>
+        <field
+            name="report_file"
+        >almonte_police_extra_services.report_extra_settlement</field>
+        <field name="print_report_name">object.name</field>
+        <field name="binding_model_id" ref="model_almonte_police_extra_settlement" />
+        <field name="binding_type">report</field>
+    </record>
+    <record id="action_report_extra_settlement_xlsx" model="ir.actions.report">
+        <field name="name">Liquidación (Excel)</field>
+        <field name="model">almonte.police.extra.settlement</field>
+        <field name="report_type">xlsx</field>
+        <field
+            name="report_name"
+        >almonte_police_extra_services.extra_settlement_xlsx</field>
+        <field
+            name="report_file"
+        >almonte_police_extra_services.extra_settlement_xlsx</field>
+        <field name="print_report_name">object.name</field>
+        <field name="binding_model_id" ref="model_almonte_police_extra_settlement" />
+        <field name="binding_type">report</field>
+    </record>
+    <template id="report_extra_settlement">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="settlement">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h3>Resumen y liquidación de servicios extraordinarios</h3>
+                        <p>
+                            <strong t-field="settlement.name" />
+                            <br />
+                            Periodo:
+                            <span t-field="settlement.date_from" />
+                            -
+                            <span t-field="settlement.date_to" />
+                            <t t-if="settlement.state == 'draft'">
+                                <span class="badge text-bg-warning">BORRADOR</span>
+                            </t>
+                        </p>
+                        <table class="table table-sm o_main_table">
+                            <thead>
+                                <tr>
+                                    <th>DNI</th>
+                                    <th>Funcionario</th>
+                                    <th>Categoría</th>
+                                    <th class="text-center">Grupo</th>
+                                    <th class="text-end">Días realizados</th>
+                                    <th class="text-end">Euros totales liquidables (€)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="settlement.line_ids" t-as="line">
+                                    <td><span t-field="line.identification_id" /></td>
+                                    <td><span t-field="line.employee_id.name" /></td>
+                                    <td><span t-field="line.police_category_id.name" /></td>
+                                    <td class="text-center">
+                                        <span t-field="line.police_group_id.name" />
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-field="line.total_days" /> días
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-field="line.total_amount" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="fw-bold">
+                                    <td colspan="4">
+                                        TOTAL (<span
+                                            t-field="settlement.employee_count"
+                                        /> funcionarios)
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-field="settlement.total_days" /> días
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-field="settlement.total_amount" />
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        <p t-if="not settlement.line_ids">
+                            No hay servicios extraordinarios realizados en el periodo.
+                        </p>
+                        <p t-if="settlement.notes" t-field="settlement.notes" />
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

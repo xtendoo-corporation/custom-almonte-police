@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_extra_settlement_list" model="ir.ui.view">
+        <field name="name">almonte.police.extra.settlement.list</field>
+        <field name="model">almonte.police.extra.settlement</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state == 'draft'">
+                <field name="name" />
+                <field name="period_type" />
+                <field name="date_from" />
+                <field name="date_to" />
+                <field name="scope" />
+                <field name="employee_count" />
+                <field name="total_days" sum="Total" />
+                <field name="total_amount" sum="Total" />
+                <field name="currency_id" column_invisible="1" />
+                <field
+                    name="state"
+                    widget="badge"
+                    decoration-success="state == 'confirmed'"
+                />
+            </list>
+        </field>
+    </record>
+    <record id="view_extra_settlement_form" model="ir.ui.view">
+        <field name="name">almonte.police.extra.settlement.form</field>
+        <field name="model">almonte.police.extra.settlement</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button
+                        name="action_generate"
+                        string="Generar liquidación"
+                        type="object"
+                        class="btn-primary"
+                        invisible="state != 'draft'"
+                    />
+                    <button
+                        name="action_confirm"
+                        string="Confirmar"
+                        type="object"
+                        invisible="state != 'draft'"
+                        groups="almonte_police_extra_services.group_police_extra_manager"
+                    />
+                    <button
+                        name="action_draft"
+                        string="Volver a borrador"
+                        type="object"
+                        invisible="state != 'confirmed'"
+                        groups="almonte_police_extra_services.group_police_extra_manager"
+                    />
+                    <button
+                        name="action_export_xlsx"
+                        string="Exportar Excel"
+                        type="object"
+                        icon="fa-file-excel-o"
+                    />
+                    <button
+                        name="action_print_pdf"
+                        string="Imprimir / PDF oficial"
+                        type="object"
+                        icon="fa-print"
+                    />
+                    <field name="state" widget="statusbar" />
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" /></h1>
+                    </div>
+                    <group>
+                        <group string="Periodo">
+                            <field
+                                name="period_type"
+                                widget="radio"
+                                options="{'horizontal': true}"
+                                readonly="state != 'draft'"
+                            />
+                            <field
+                                name="month"
+                                invisible="period_type != 'month'"
+                                required="period_type == 'month'"
+                                readonly="state != 'draft'"
+                            />
+                            <field
+                                name="year"
+                                options="{'format': false}"
+                                readonly="state != 'draft'"
+                            />
+                            <field name="date_from" />
+                            <field name="date_to" />
+                        </group>
+                        <group string="Ámbito">
+                            <field
+                                name="scope"
+                                widget="radio"
+                                options="{'horizontal': true}"
+                                readonly="state != 'draft'"
+                            />
+                            <field
+                                name="employee_id"
+                                invisible="scope != 'employee'"
+                                required="scope == 'employee'"
+                                readonly="state != 'draft'"
+                                options="{'no_create': true}"
+                            />
+                            <field name="generated_on" />
+                            <field name="company_id" groups="base.group_multi_company" />
+                        </group>
+                    </group>
+                    <group class="oe_subtotal_footer">
+                        <field name="employee_count" />
+                        <field name="total_services" />
+                        <field name="total_days" />
+                        <field name="total_amount" class="oe_subtotal_footer_separator" />
+                        <field name="currency_id" invisible="1" />
+                    </group>
+                    <notebook>
+                        <page string="Liquidación individualizada por funcionario">
+                            <field name="line_ids" readonly="1">
+                                <list>
+                                    <field name="identification_id" />
+                                    <field name="employee_id" />
+                                    <field name="police_category_id" />
+                                    <field name="police_group_id" />
+                                    <field name="service_count" sum="Total" />
+                                    <field name="total_days" sum="Total" />
+                                    <field name="total_amount" sum="Total" />
+                                    <field name="currency_id" column_invisible="1" />
+                                </list>
+                                <form>
+                                    <group>
+                                        <field name="employee_id" />
+                                        <field name="total_amount" />
+                                    </group>
+                                    <field name="history_ids">
+                                        <list>
+                                            <field name="service_date" />
+                                            <field name="service_id" />
+                                            <field name="service_type_id" />
+                                            <field name="days" />
+                                            <field name="amount" />
+                                        </list>
+                                    </field>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Observaciones">
+                            <field name="notes" />
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter />
+            </form>
+        </field>
+    </record>
+    <record id="view_extra_settlement_search" model="ir.ui.view">
+        <field name="name">almonte.police.extra.settlement.search</field>
+        <field name="model">almonte.police.extra.settlement</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" />
+                <field name="employee_id" />
+                <field name="year" />
+                <filter
+                    name="monthly"
+                    string="Mensuales"
+                    domain="[('period_type', '=', 'month')]"
+                />
+                <filter
+                    name="yearly"
+                    string="Anuales"
+                    domain="[('period_type', '=', 'year')]"
+                />
+                <separator />
+                <filter name="draft" string="Borrador" domain="[('state', '=', 'draft')]" />
+                <filter
+                    name="confirmed"
+                    string="Confirmadas"
+                    domain="[('state', '=', 'confirmed')]"
+                />
+                <group>
+                    <filter name="group_year" string="Año" context="{'group_by': 'year'}" />
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="view_settlement_line_list_my" model="ir.ui.view">
+        <field name="name">almonte.police.extra.settlement.line.list.my</field>
+        <field name="model">almonte.police.extra.settlement.line</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0" default_order="date_from desc">
+                <field name="settlement_name" />
+                <field name="date_from" />
+                <field name="date_to" />
+                <field name="service_count" sum="Total" />
+                <field name="total_days" sum="Total" />
+                <field name="total_amount" sum="Total" />
+                <field name="currency_id" column_invisible="1" />
+            </list>
+        </field>
+    </record>
+    <record id="view_settlement_line_form_my" model="ir.ui.view">
+        <field name="name">almonte.police.extra.settlement.line.form.my</field>
+        <field name="model">almonte.police.extra.settlement.line</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0" delete="0">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="settlement_name" /></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="employee_id" options="{'no_open': true}" />
+                            <field name="identification_id" />
+                            <field name="police_category_id" options="{'no_open': true}" />
+                            <field name="police_group_id" options="{'no_open': true}" />
+                        </group>
+                        <group>
+                            <field name="date_from" />
+                            <field name="date_to" />
+                            <field name="service_count" />
+                            <field name="total_days" />
+                            <field name="total_amount" />
+                            <field name="currency_id" invisible="1" />
+                        </group>
+                    </group>
+                    <field name="history_ids" readonly="1">
+                        <list>
+                            <field name="service_date" />
+                            <field name="service_id" options="{'no_open': true}" />
+                            <field name="service_type_id" />
+                            <field name="days" />
+                            <field name="amount" />
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_my_settlements" model="ir.actions.act_window">
+        <field name="name">Mi liquidación</field>
+        <field name="res_model">almonte.police.extra.settlement.line</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_settlement_line_list_my" />
+        <field name="domain">[('employee_id.user_id', '=', uid)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aún no tienes liquidaciones confirmadas.
+            </p>
+            <p>Aquí aparecerán tus servicios extraordinarios liquidados cada mes.</p>
+        </field>
+    </record>
+    <record id="action_my_settlements_form_view" model="ir.actions.act_window.view">
+        <field name="sequence">2</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_settlement_line_form_my" />
+        <field name="act_window_id" ref="action_my_settlements" />
+    </record>
+    <record id="action_extra_settlements" model="ir.actions.act_window">
+        <field name="name">Resumen y liquidación</field>
+        <field name="res_model">almonte.police.extra.settlement</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crea una liquidación por mes o por año, de la plantilla completa o
+                de un policía.
+            </p>
+            <p>
+                Cada día 1 se genera automáticamente la liquidación del mes
+                anterior. Solo incluye los agentes con servicios realizados.
+            </p>
+        </field>
+    </record>
+</odoo>

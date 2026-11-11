@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_police_category_list" model="ir.ui.view">
+        <field name="name">almonte.police.category.list</field>
+        <field name="model">almonte.police.category</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle" />
+                <field name="name" />
+                <field name="employee_count" />
+                <field name="active" column_invisible="1" />
+            </list>
+        </field>
+    </record>
+    <record id="view_police_category_search" model="ir.ui.view">
+        <field name="name">almonte.police.category.search</field>
+        <field name="model">almonte.police.category</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" />
+                <filter
+                    name="archived"
+                    string="Archivadas"
+                    domain="[('active', '=', False)]"
+                />
+            </search>
+        </field>
+    </record>
+    <record id="action_police_categories" model="ir.actions.act_window">
+        <field name="name">Categorías de agente</field>
+        <field name="res_model">almonte.police.category</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crea las categorías de los agentes de la Policía Local.
+            </p>
+        </field>
+    </record>
+
+    <record id="view_police_group_list" model="ir.ui.view">
+        <field name="name">almonte.police.group.list</field>
+        <field name="model">almonte.police.group</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle" />
+                <field name="name" />
+                <field name="employee_count" />
+                <field name="active" column_invisible="1" />
+            </list>
+        </field>
+    </record>
+    <record id="view_police_group_search" model="ir.ui.view">
+        <field name="name">almonte.police.group.search</field>
+        <field name="model">almonte.police.group</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" />
+                <filter
+                    name="archived"
+                    string="Archivados"
+                    domain="[('active', '=', False)]"
+                />
+            </search>
+        </field>
+    </record>
+    <record id="action_police_groups" model="ir.actions.act_window">
+        <field name="name">Grupos</field>
+        <field name="res_model">almonte.police.group</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crea los grupos en los que se organizan los agentes.
+            </p>
+        </field>
+    </record>
+</odoo>

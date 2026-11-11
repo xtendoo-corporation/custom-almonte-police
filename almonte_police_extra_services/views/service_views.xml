@@ -7,7 +7,6 @@
             <list>
                 <field name="code" />
                 <field name="name" />
-                <field name="pricing_mode" />
                 <field name="unit_price" />
                 <field name="currency_id" />
                 <field name="active" />
@@ -23,7 +22,6 @@
                     <group>
                         <field name="name" />
                         <field name="code" />
-                        <field name="pricing_mode" />
                         <field name="unit_price" />
                         <field name="currency_id" />
                         <field name="active" />
@@ -40,6 +38,12 @@
             <list decoration-success="state == 'assigned'">
                 <field name="name" />
                 <field name="service_date" />
+                <field name="signup_deadline" optional="show" />
+                <field
+                    name="police_category_ids"
+                    widget="many2many_tags"
+                    optional="show"
+                />
                 <field name="service_type_id" />
                 <field name="required_shift_id" />
                 <field name="vacancies" />
@@ -71,6 +75,14 @@
                         groups="almonte_police_extra_services.group_police_extra_user"
                     />
                     <button
+                        name="action_print_decree"
+                        string="Imprimir decreto"
+                        type="object"
+                        icon="fa-print"
+                        invisible="state not in ('assigned', 'closed')"
+                        groups="almonte_police_extra_services.group_police_extra_user"
+                    />
+                    <button
                         name="action_volunteer"
                         string="Apuntarme como voluntario"
                         type="object"
@@ -88,9 +100,15 @@
                     <group>
                         <group>
                             <field name="service_date" />
+                            <field name="signup_deadline" />
                             <field name="service_type_id" />
                             <field name="required_shift_id" />
-                            <field name="police_category" />
+                            <field
+                                name="police_category_ids"
+                                widget="many2many_tags"
+                                options="{'no_create': True}"
+                                placeholder="Todas las categorías"
+                            />
                         </group>
                         <group>
                             <field name="vacancies" />
@@ -109,9 +127,17 @@
                                     <field name="employee_id" />
                                     <field name="current_shift_id" />
                                     <field name="previous_shift_id" />
+                                    <field
+                                        name="priority_tier"
+                                        widget="badge"
+                                        decoration-success="priority_tier == '1_free'"
+                                        decoration-info="priority_tier == '2_rested'"
+                                        decoration-warning="priority_tier == '3_double'"
+                                        decoration-danger="priority_tier in ('4_restricted', '5_unavailable')"
+                                    />
                                     <field name="availability_status" />
-                                    <field name="accumulated_extra_days" />
-                                    <field name="priority_score" />
+                                    <field name="quarter_service_count" />
+                                    <field name="priority_score" optional="hide" />
                                     <field name="rank" />
                                     <field name="amount" />
                                     <field name="state" widget="badge" />
@@ -161,15 +187,65 @@
         <field name="name">almonte.police.extra.service.history.list</field>
         <field name="model">almonte.police.extra.service.history</field>
         <field name="arch" type="xml">
-            <list>
+            <list decoration-info="origin == 'backlog'">
                 <field name="service_date" />
                 <field name="employee_id" />
+                <field name="origin" widget="badge" optional="show" />
                 <field name="service_id" />
                 <field name="service_type_id" />
-                <field name="days" />
+                <field name="days" sum="Total días" />
                 <field name="hours" />
-                <field name="amount" />
+                <field name="amount" sum="Total" />
+                <field name="currency_id" column_invisible="1" />
             </list>
+        </field>
+    </record>
+    <record id="view_history_backlog_list" model="ir.ui.view">
+        <field name="name">almonte.police.extra.service.history.backlog.list</field>
+        <field name="model">almonte.police.extra.service.history</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="origin" column_invisible="1" />
+                <field name="service_date" string="Fecha de referencia" />
+                <field name="employee_id" options="{'no_create': True}" />
+                <field name="days" string="Días extras atrasados" sum="Total días" />
+                <field name="amount" string="Cuantía" sum="Total" />
+                <field name="currency_id" column_invisible="1" />
+                <field name="notes" />
+            </list>
+        </field>
+    </record>
+    <record id="view_history_search" model="ir.ui.view">
+        <field name="name">almonte.police.extra.service.history.search</field>
+        <field name="model">almonte.police.extra.service.history</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id" />
+                <field name="service_id" />
+                <filter
+                    name="backlog"
+                    string="Extras atrasados"
+                    domain="[('origin', '=', 'backlog')]"
+                />
+                <filter
+                    name="assigned_services"
+                    string="Servicios adjudicados"
+                    domain="[('origin', '=', 'service')]"
+                />
+                <group>
+                    <filter
+                        name="group_employee"
+                        string="Agente"
+                        context="{'group_by': 'employee_id'}"
+                    />
+                    <filter
+                        name="group_origin"
+                        string="Origen"
+                        context="{'group_by': 'origin'}"
+                    />
+                </group>
+            </search>
         </field>
     </record>
     <record id="view_extra_service_list_agent" model="ir.ui.view">
@@ -179,6 +255,8 @@
             <list decoration-success="state == 'assigned'" create="0" delete="0">
                 <field name="name" />
                 <field name="service_date" />
+                <field name="signup_deadline" />
+                <field name="police_category_ids" widget="many2many_tags" />
                 <field name="service_type_id" />
                 <field name="required_shift_id" />
                 <field name="vacancies" />
@@ -195,6 +273,72 @@
         </field>
     </record>
 
+    <record id="view_extra_service_form_agent" model="ir.ui.view">
+        <field name="name">almonte.police.extra.service.form.agent</field>
+        <field name="model">almonte.police.extra.service</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0" delete="0">
+                <header>
+                    <button
+                        name="action_volunteer"
+                        string="Apuntarme"
+                        type="object"
+                        class="btn-primary"
+                        invisible="not can_volunteer"
+                    />
+                    <field name="state" widget="statusbar" />
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" /></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="service_date" />
+                            <field name="signup_deadline" />
+                            <field name="required_shift_id" />
+                        </group>
+                        <group>
+                            <field name="service_type_id" />
+                            <field name="vacancies" />
+                            <field
+                                name="police_category_ids"
+                                widget="many2many_tags"
+                                placeholder="Todas las categorías"
+                            />
+                            <field name="can_volunteer" invisible="1" />
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Policías apuntados y adjudicación">
+                            <field name="signup_ids" readonly="1">
+                                <list
+                                    decoration-success="state in ('assigned_free', 'assigned_double')"
+                                    decoration-muted="state in ('waiting_free', 'waiting_double')"
+                                    default_order="rank, row_number"
+                                >
+                                    <field name="rank" />
+                                    <field name="employee_id" />
+                                    <field name="row_number" string="Orden inscripción" />
+                                    <field
+                                        name="priority_tier"
+                                        widget="badge"
+                                        decoration-success="priority_tier == '1_free'"
+                                        decoration-info="priority_tier == '2_rested'"
+                                        decoration-warning="priority_tier == '3_double'"
+                                        decoration-danger="priority_tier in ('4_restricted', '5_unavailable')"
+                                    />
+                                    <field name="state" widget="badge" />
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
     <record id="view_extra_service_search_agent" model="ir.ui.view">
         <field name="name">almonte.police.extra.service.search.agent</field>
         <field name="model">almonte.police.extra.service</field>
@@ -208,6 +352,16 @@
                     name="published"
                     string="Publicadas"
                     domain="[('state', '=', 'published')]"
+                />
+                <filter
+                    name="assigned"
+                    string="Adjudicadas"
+                    domain="[('state', 'in', ('assigned', 'closed'))]"
+                />
+                <filter
+                    name="my_services"
+                    string="Donde estoy apuntado"
+                    domain="[('signup_ids.employee_id.user_id', '=', uid)]"
                 />
             </search>
         </field>

@@ -35,7 +35,7 @@
         <field name="name">Agentes</field>
         <field name="res_model">hr.employee</field>
         <field name="view_mode">list,form</field>
-        <field name="domain">[('police_category', '!=', False)]</field>
+        <field name="domain">[('police_category_id', '!=', False)]</field>
     </record>
     <record id="action_extra_services" model="ir.actions.act_window">
         <field name="name">Servicios extraordinarios</field>
@@ -78,6 +78,24 @@
         <field name="name">Histórico de extras</field>
         <field name="res_model">almonte.police.extra.service.history</field>
         <field name="view_mode">list</field>
+    </record>
+    <record id="action_history_backlog" model="ir.actions.act_window">
+        <field name="name">Extras atrasados</field>
+        <field name="res_model">almonte.police.extra.service.history</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_history_backlog_list" />
+        <field name="domain">[('origin', '=', 'backlog')]</field>
+        <field name="context">{'default_origin': 'backlog'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Registra los días de servicios extraordinarios atrasados
+            </p>
+            <p>
+                Cada día atrasado computa como un servicio para el orden de
+                adjudicación y su cuantía se suma a la liquidación del mes de
+                la fecha de referencia.
+            </p>
+        </field>
     </record>
     <record id="action_service_types" model="ir.actions.act_window">
         <field name="name">Tipos de servicio y tarifas</field>
@@ -127,6 +145,78 @@
         <field name="domain">[('state', '=', 'published')]</field>
         <field name="context">{'search_default_published': 1}</field>
     </record>
+    <record
+        id="action_extra_services_available_list_view"
+        model="ir.actions.act_window.view"
+    >
+        <field name="sequence">1</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_extra_service_list_agent" />
+        <field name="act_window_id" ref="action_extra_services_available" />
+    </record>
+    <record
+        id="action_extra_services_available_form_view"
+        model="ir.actions.act_window.view"
+    >
+        <field name="sequence">2</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_extra_service_form_agent" />
+        <field name="act_window_id" ref="action_extra_services_available" />
+    </record>
+    <record id="action_extra_services_assignments" model="ir.actions.act_window">
+        <field name="name">Adjudicaciones</field>
+        <field name="res_model">almonte.police.extra.service</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_extra_service_search_agent" />
+        <field name="domain">[('state', 'in', ('published', 'assigned', 'closed'))]</field>
+        <field name="context">{'search_default_assigned': 1}</field>
+    </record>
+    <record
+        id="action_extra_services_assignments_list_view"
+        model="ir.actions.act_window.view"
+    >
+        <field name="sequence">1</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_extra_service_list_agent" />
+        <field name="act_window_id" ref="action_extra_services_assignments" />
+    </record>
+    <record
+        id="action_extra_services_assignments_form_view"
+        model="ir.actions.act_window.view"
+    >
+        <field name="sequence">2</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_extra_service_form_agent" />
+        <field name="act_window_id" ref="action_extra_services_assignments" />
+    </record>
+    <record id="action_my_schedule" model="ir.actions.act_window">
+        <field name="name">Mi cuadrante</field>
+        <field name="res_model">almonte.police.schedule.assignment</field>
+        <field name="view_mode">calendar,list</field>
+        <field name="domain">[('employee_id.user_id', '=', uid)]</field>
+        <field name="context">{'show_shift_hours': True}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Todavía no tienes turnos asignados en el cuadrante.
+            </p>
+            <p>
+                Cualquier permiso reglamentario o baja excluye de realizar
+                servicios extraordinarios en ese día.
+            </p>
+        </field>
+    </record>
+    <record id="action_my_schedule_calendar_view" model="ir.actions.act_window.view">
+        <field name="sequence">1</field>
+        <field name="view_mode">calendar</field>
+        <field name="view_id" ref="view_schedule_assignment_calendar_agent" />
+        <field name="act_window_id" ref="action_my_schedule" />
+    </record>
+    <record id="action_my_schedule_list_view" model="ir.actions.act_window.view">
+        <field name="sequence">2</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_schedule_assignment_list_agent" />
+        <field name="act_window_id" ref="action_my_schedule" />
+    </record>
     <record id="action_my_signups" model="ir.actions.act_window">
         <field name="name">Mis inscripciones</field>
         <field name="res_model">almonte.police.extra.service.signup</field>
@@ -157,6 +247,30 @@
         sequence="5"
     />
     <menuitem
+        id="menu_my_schedule"
+        name="Mi cuadrante"
+        parent="menu_services"
+        action="action_my_schedule"
+        groups="group_police_extra_agent"
+        sequence="1"
+    />
+    <menuitem
+        id="menu_extra_services_assignments"
+        name="Adjudicaciones"
+        parent="menu_services"
+        action="action_extra_services_assignments"
+        groups="group_police_extra_agent"
+        sequence="7"
+    />
+    <menuitem
+        id="menu_my_settlements"
+        name="Mi liquidación"
+        parent="menu_services"
+        action="action_my_settlements"
+        groups="group_police_extra_agent"
+        sequence="12"
+    />
+    <menuitem
         id="menu_my_signups"
         name="Mis inscripciones"
         parent="menu_services"
@@ -181,11 +295,27 @@
         sequence="20"
     />
     <menuitem
+        id="menu_schedule_generate"
+        name="Generar cuadrante por ciclos"
+        parent="menu_services"
+        action="action_schedule_generate_wizard"
+        groups="group_police_extra_user,group_police_extra_manager"
+        sequence="21"
+    />
+    <menuitem
         id="menu_reports"
         name="Informes"
         parent="menu_police_root"
         groups="base.group_system,group_police_extra_user,group_police_extra_manager"
         sequence="20"
+    />
+    <menuitem
+        id="menu_extra_settlements"
+        name="Resumen y liquidación"
+        parent="menu_reports"
+        action="action_extra_settlements"
+        groups="group_police_extra_user,group_police_extra_manager"
+        sequence="1"
     />
     <menuitem
         id="menu_extra_summary"
@@ -204,6 +334,14 @@
         sequence="10"
     />
     <menuitem
+        id="menu_history_backlog"
+        name="Extras atrasados"
+        parent="menu_reports"
+        action="action_history_backlog"
+        groups="group_police_extra_manager"
+        sequence="15"
+    />
+    <menuitem
         id="menu_configuration"
         name="Configuración"
         parent="menu_police_root"
@@ -219,12 +357,36 @@
         sequence="5"
     />
     <menuitem
+        id="menu_police_categories"
+        name="Categorías de agente"
+        parent="menu_configuration"
+        action="action_police_categories"
+        groups="base.group_system,group_police_extra_manager"
+        sequence="6"
+    />
+    <menuitem
+        id="menu_police_groups"
+        name="Grupos"
+        parent="menu_configuration"
+        action="action_police_groups"
+        groups="base.group_system,group_police_extra_manager"
+        sequence="7"
+    />
+    <menuitem
         id="menu_working_schedules"
         name="Calendarios laborales"
         parent="menu_configuration"
         action="action_working_schedules"
         groups="group_police_extra_user,group_police_extra_manager"
         sequence="10"
+    />
+    <menuitem
+        id="menu_baremo_reset"
+        name="Poner a cero baremo a fecha"
+        parent="menu_configuration"
+        action="action_baremo_reset_wizard"
+        groups="group_police_extra_manager"
+        sequence="15"
     />
     <menuitem
         id="menu_service_types"

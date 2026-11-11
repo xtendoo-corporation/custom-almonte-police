@@ -10,6 +10,8 @@
                 <field name="name" />
                 <field name="state_kind" />
                 <field name="is_night" />
+                <field name="start_hour" widget="float_time" />
+                <field name="end_hour" widget="float_time" />
                 <field name="color" widget="color_picker" />
                 <field name="active" />
             </list>
@@ -27,6 +29,16 @@
                         <field name="sequence" />
                         <field name="state_kind" />
                         <field name="is_night" />
+                        <field
+                            name="start_hour"
+                            widget="float_time"
+                            invisible="state_kind != 'work'"
+                        />
+                        <field
+                            name="end_hour"
+                            widget="float_time"
+                            invisible="state_kind != 'work'"
+                        />
                         <field name="color" widget="color_picker" />
                         <field name="active" />
                     </group>
@@ -98,6 +110,38 @@
                 <field name="employee_id" filters="1" invisible="1" />
                 <field name="shift_type_id" filters="1" invisible="1" />
             </calendar>
+        </field>
+    </record>
+    <record id="view_schedule_assignment_calendar_agent" model="ir.ui.view">
+        <field name="name">almonte.police.schedule.assignment.calendar.agent</field>
+        <field name="model">almonte.police.schedule.assignment</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <calendar
+                string="Mi cuadrante"
+                date_start="date"
+                mode="month"
+                color="calendar_color"
+                create="0"
+                delete="0"
+                quick_create="0"
+                event_open_popup="1"
+            >
+                <field name="shift_type_id" filters="1" />
+                <field name="notes" />
+            </calendar>
+        </field>
+    </record>
+    <record id="view_schedule_assignment_list_agent" model="ir.ui.view">
+        <field name="name">almonte.police.schedule.assignment.list.agent</field>
+        <field name="model">almonte.police.schedule.assignment</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0" default_order="date desc">
+                <field name="date" />
+                <field name="shift_type_id" />
+                <field name="notes" />
+            </list>
         </field>
     </record>
     <record id="view_schedule_assignment_search" model="ir.ui.view">

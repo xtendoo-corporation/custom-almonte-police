@@ -10,16 +10,10 @@ class PoliceServiceType(models.Model):
 
     name = fields.Char(string="Nombre", required=True, translate=True)
     code = fields.Char(string="Código", required=True, index=True)
-    pricing_mode = fields.Selection(
-        selection=[
-            ("fixed", "Importe fijo"),
-            ("hourly", "Por horas"),
-        ],
-        required=True,
-        default="fixed",
-    )
     unit_price = fields.Monetary(
-        string="Tarifa",
+        string="Importe del servicio",
+        help="Importe total que se paga por cada servicio adjudicado, "
+        "independientemente de las horas que dure.",
         required=True,
         currency_field="currency_id",
     )

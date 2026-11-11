@@ -64,10 +64,16 @@
     <record id="rule_extra_service_agent_published_or_own" model="ir.rule">
         <field
             name="name"
-        >Policía: agentes solo ven servicios publicados o propios</field>
+        >Policía: agentes ven los publicados de su categoría, los adjudicados y los propios</field>
         <field name="model_id" ref="model_almonte_police_extra_service" />
         <field name="domain_force">
-            ['|', ('state', '=', 'published'), '&amp;', ('state', 'in', ['assigned', 'closed']), ('signup_ids.employee_id.user_id', '=', user.id)]
+            ['|', '|',
+                '&amp;', ('state', '=', 'published'),
+                    '|', ('police_category_ids', '=', False),
+                        ('police_category_ids', 'in', user.employee_ids.police_category_id.ids),
+                ('state', 'in', ['assigned', 'closed']),
+                '&amp;', ('state', 'in', ['published', 'assigned', 'closed']),
+                    ('signup_ids.employee_id.user_id', '=', user.id)]
         </field>
         <field name="groups" eval="[(4, ref('group_police_extra_agent'))]" />
     </record>
@@ -87,6 +93,24 @@
         <field name="model_id" ref="model_almonte_police_extra_service_signup" />
         <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
         <field name="groups" eval="[(4, ref('group_police_extra_agent'))]" />
+    </record>
+    <record id="rule_signup_agent_read_visible_services" model="ir.rule">
+        <field
+            name="name"
+        >Policía: agentes consultan los inscritos de los servicios que pueden ver</field>
+        <field name="model_id" ref="model_almonte_police_extra_service_signup" />
+        <field name="domain_force">
+            ['|',
+                '&amp;', ('service_id.state', '=', 'published'),
+                    '|', ('service_id.police_category_ids', '=', False),
+                        ('service_id.police_category_ids', 'in', user.employee_ids.police_category_id.ids),
+                ('service_id.state', 'in', ['assigned', 'closed'])]
+        </field>
+        <field name="groups" eval="[(4, ref('group_police_extra_agent'))]" />
+        <field name="perm_read" eval="True" />
+        <field name="perm_write" eval="False" />
+        <field name="perm_create" eval="False" />
+        <field name="perm_unlink" eval="False" />
     </record>
     <record id="rule_signup_coordinator_full" model="ir.rule">
         <field
@@ -138,6 +162,24 @@
             name="name"
         >Policía: coordinadores y responsables ven todo el resumen económico</field>
         <field name="model_id" ref="model_almonte_police_extra_summary" />
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_police_extra_user'))]" />
+    </record>
+    <record id="rule_settlement_line_agent_own" model="ir.rule">
+        <field
+            name="name"
+        >Policía: agentes solo ven su liquidación confirmada</field>
+        <field name="model_id" ref="model_almonte_police_extra_settlement_line" />
+        <field name="domain_force">
+            [('employee_id.user_id', '=', user.id), ('settlement_state', '=', 'confirmed')]
+        </field>
+        <field name="groups" eval="[(4, ref('group_police_extra_agent'))]" />
+    </record>
+    <record id="rule_settlement_line_coordinator_full" model="ir.rule">
+        <field
+            name="name"
+        >Policía: coordinadores y responsables ven todas las liquidaciones</field>
+        <field name="model_id" ref="model_almonte_police_extra_settlement_line" />
         <field name="domain_force">[(1, '=', 1)]</field>
         <field name="groups" eval="[(4, ref('group_police_extra_user'))]" />
     </record>

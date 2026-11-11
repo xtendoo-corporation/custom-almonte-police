@@ -7,19 +7,21 @@ from odoo.exceptions import AccessError, UserError
 class HrEmployee(models.Model):
     _inherit = "hr.employee"
 
-    police_category = fields.Selection(
-        selection=[
-            ("inspector", "Inspectora"),
-            ("subinspector", "Subinspector"),
-            ("officer", "Oficial Policía"),
-            ("organizational_officer", "Oficial Policía Organizativo"),
-            ("police", "Policía"),
-        ],
+    police_category_id = fields.Many2one(
+        "almonte.police.category",
         string="Categoría policial",
+        ondelete="restrict",
+        index=True,
         tracking=True,
     )
     police_dip = fields.Char(string="DIP", index=True, tracking=True)
-    police_group = fields.Char(string="Grupo policial", index=True, tracking=True)
+    police_group_id = fields.Many2one(
+        "almonte.police.group",
+        string="Grupo policial",
+        ondelete="restrict",
+        index=True,
+        tracking=True,
+    )
     police_employee_id = fields.Integer(
         string="ID empleado Policía",
         index=True,
@@ -61,7 +63,7 @@ class HrEmployee(models.Model):
             )
         if self.user_id:
             raise UserError(_("Este agente ya tiene un usuario Odoo vinculado."))
-        if not self.police_category:
+        if not self.police_category_id:
             raise UserError(
                 _("Informa la categoría policial antes de crear el usuario.")
             )

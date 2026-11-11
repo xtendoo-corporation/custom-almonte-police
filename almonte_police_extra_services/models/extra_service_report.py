@@ -28,10 +28,8 @@ class PoliceExtraSummary(models.Model):
                     COUNT(h.id) AS service_count,
                     COALESCE(SUM(h.hours), 0) AS total_hours,
                     COALESCE(SUM(h.amount), 0) AS total_amount,
-                    st.currency_id AS currency_id
+                    h.currency_id AS currency_id
                 FROM almonte_police_extra_service_history h
-                JOIN almonte_police_service_type st
-                    ON st.id = h.service_type_id
-                GROUP BY h.employee_id, st.currency_id
+                GROUP BY h.employee_id, h.currency_id
             )
         """)

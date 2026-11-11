@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_baremo_reset_wizard_form" model="ir.ui.view">
+        <field name="name">almonte.police.baremo.reset.wizard.form</field>
+        <field name="model">almonte.police.baremo.reset.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <div class="alert alert-info" role="alert">
+                    Los servicios anteriores a la fecha indicada dejan de computar
+                    para el orden de adjudicación. El histórico y las liquidaciones
+                    no se modifican.
+                </div>
+                <group>
+                    <field name="current_reset_date" />
+                    <field name="reset_date" />
+                </group>
+                <footer>
+                    <button
+                        name="action_apply"
+                        string="Poner a cero"
+                        type="object"
+                        class="btn-primary"
+                    />
+                    <button
+                        name="action_clear"
+                        string="Quitar puesta a cero"
+                        type="object"
+                        invisible="not current_reset_date"
+                    />
+                    <button string="Cancelar" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="action_baremo_reset_wizard" model="ir.actions.act_window">
+        <field name="name">Poner a cero baremo a fecha</field>
+        <field name="res_model">almonte.police.baremo.reset.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="view_schedule_generate_wizard_form" model="ir.ui.view">
+        <field name="name">almonte.police.schedule.generate.wizard.form</field>
+        <field name="model">almonte.police.schedule.generate.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <group string="Ciclo">
+                        <field name="pattern" widget="radio" />
+                        <field name="cycle_day" invisible="pattern == '5_2'" />
+                    </group>
+                    <group string="Periodo">
+                        <field name="date_start" />
+                        <field name="scope" widget="radio" />
+                        <field name="date_end" />
+                        <field name="preserve_absences" />
+                    </group>
+                </group>
+                <field
+                    name="employee_ids"
+                    widget="many2many_tags"
+                    options="{'no_create': True}"
+                    placeholder="Agentes a los que se genera el cuadrante..."
+                />
+                <footer>
+                    <button
+                        name="action_generate"
+                        string="Generar cuadrante"
+                        type="object"
+                        class="btn-primary"
+                    />
+                    <button string="Cancelar" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="action_schedule_generate_wizard" model="ir.actions.act_window">
+        <field name="name">Generar cuadrante por ciclos</field>
+        <field name="res_model">almonte.police.schedule.generate.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="hr.model_hr_employee" />
+        <field name="binding_view_types">list,form</field>
+        <field
+            name="group_ids"
+            eval="[(4, ref('group_police_extra_user')), (4, ref('group_police_extra_manager'))]"
+        />
+    </record>
+</odoo>
