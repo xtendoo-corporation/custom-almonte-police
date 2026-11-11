@@ -429,6 +429,14 @@
         sequence="30"
     />
     <menuitem
+        id="menu_priority_criteria"
+        name="Criterios de prelación"
+        parent="menu_configuration"
+        action="action_priority_criteria"
+        groups="base.group_system,group_police_extra_manager"
+        sequence="32"
+    />
+    <menuitem
         id="menu_assignment_settings"
         name="Parámetros de adjudicación"
         parent="menu_configuration"

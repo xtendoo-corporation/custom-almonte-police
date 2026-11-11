@@ -5,7 +5,9 @@ from datetime import timedelta
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError, ValidationError
 
-EXCLUDED_PRIORITY = 999999
+from .priority_criterion import RANKING_WIDTHS
+
+EXCLUDED_PRIORITY = 10**15
 PRIORITY_TIERS = [
     ("1_free", "1. Libre"),
     ("2_rested", "2. Descanso mínimo antes"),
@@ -434,7 +436,7 @@ class PoliceExtraServiceSignup(models.Model):
         compute="_compute_availability",
         store=True,
     )
-    priority_score = fields.Integer(
+    priority_score = fields.Float(
         string="Puntuación de prioridad",
         compute="_compute_availability",
         store=True,
@@ -649,7 +651,7 @@ class PoliceExtraServiceSignup(models.Model):
             limit=1,
         )
 
-    def _get_priority_tier(self, current_shift, previous_shift):
+    def _get_priority_tier(self, current_shift, previous_shift, active_types=None):
         """Aplica los criterios oficiales de prelación del Reglamento.
 
         Devuelve una tupla ``(nivel, estado legible)``:
@@ -663,19 +665,39 @@ class PoliceExtraServiceSignup(models.Model):
         5. No disponible: ausencias que impiden ese extra o sin cuadrante.
            Las ausencias parciales (p. ej. cita médica de mañana) que no
            impiden el turno del extra cuentan como libre.
+
+        Cada exclusión solo se aplica si su criterio está activo en
+        ``active_types`` (por defecto, todas).
         """
         self.ensure_one()
+        if active_types is None:
+            active_types = {
+                "exclude_no_schedule",
+                "exclude_absence",
+                "exclude_already_assigned",
+                "exclude_shift_restriction",
+                "exclude_shift_overlap",
+            }
         service_shift = self.service_id.required_shift_id
         if not current_shift:
-            return "5_unavailable", _("NO DISPONIBLE (sin cuadrante)")
-        if current_shift._blocks_extra_shift(service_shift):
+            if "exclude_no_schedule" in active_types:
+                return "5_unavailable", _("NO DISPONIBLE (sin cuadrante)")
+            return "1_free", _("LIBRE (sin cuadrante)")
+        if "exclude_absence" in active_types and current_shift._blocks_extra_shift(
+            service_shift
+        ):
             return "5_unavailable", _("NO DISPONIBLE (%s)", current_shift.code)
-        conflict = self.service_id._get_conflicting_history(self.employee_id)
+        conflict = (
+            "exclude_already_assigned" in active_types
+            and self.service_id._get_conflicting_history(self.employee_id)
+        )
         if conflict:
             return "4_restricted", _(
                 "RESTRINGIDO (ya adjudicado en %s)", conflict.service_id.name
             )
-        if self._get_shift_restriction(previous_shift):
+        if "exclude_shift_restriction" in active_types and (
+            self._get_shift_restriction(previous_shift)
+        ):
             return "4_restricted", _(
                 "RESTRINGIDO (%(previous)s a %(service)s)",
                 previous=previous_shift.name,
@@ -700,6 +722,8 @@ class PoliceExtraServiceSignup(models.Model):
         if any(
             start < service_end and service_start < end for start, end in work_intervals
         ):
+            if "exclude_shift_overlap" not in active_types:
+                return "3_double", _("DOBLA TURNO (coincide con su turno)")
             return "4_restricted", _(
                 "RESTRINGIDO (coincide con su turno de %s)", current_shift.name
             )
@@ -725,8 +749,15 @@ class PoliceExtraServiceSignup(models.Model):
     )
     def _compute_availability(self):
         assignment_model = self.env["almonte.police.schedule.assignment"]
-        tier_weight = {tier: index for index, tier in enumerate(ELIGIBLE_TIERS)}
+        criterion_model = self.env["almonte.police.priority.criterion"]
+        criteria_by_type = {}
         for signup in self:
+            service_type = signup.service_id.service_type_id
+            if service_type not in criteria_by_type:
+                criteria_by_type[service_type] = criterion_model._get_for_service_type(
+                    service_type
+                )
+            criteria = criteria_by_type[service_type]
             current = assignment_model.get_for_employee_date(
                 signup.employee_id, signup.service_id.service_date
             ).shift_type_id
@@ -734,7 +765,9 @@ class PoliceExtraServiceSignup(models.Model):
                 signup.employee_id,
                 signup.service_id.service_date - timedelta(days=1),
             ).shift_type_id
-            tier, status = signup._get_priority_tier(current, previous)
+            tier, status = signup._get_priority_tier(
+                current, previous, set(criteria.mapped("criterion_type"))
+            )
             signup.current_shift_id = current
             signup.previous_shift_id = previous
             signup.quarter_service_count = signup._quarter_service_count()
@@ -742,12 +775,33 @@ class PoliceExtraServiceSignup(models.Model):
             signup.priority_tier = tier
             signup.availability_status = status
             signup.priority_score = (
-                tier_weight[tier] * 100000
-                + round(signup.quarter_service_count * 1000)
-                + signup.row_number
+                signup._get_ranking_score(tier, criteria)
                 if tier in ELIGIBLE_TIERS
                 else EXCLUDED_PRIORITY
             )
+
+    def _get_ranking_keys(self, tier):
+        self.ensure_one()
+        return {
+            "rank_free": 0 if tier == "1_free" else 1,
+            "rank_rest": 0 if tier in ("1_free", "2_rested") else 1,
+            "rank_quarter_services": round(self.quarter_service_count * 100),
+            "rank_signup_order": self.row_number,
+        }
+
+    def _get_ranking_score(self, tier, criteria):
+        """Combina los criterios de orden activos en una única puntuación.
+
+        Cada criterio ocupa un rango fijo (``RANKING_WIDTHS``), de modo que
+        ordenar por la puntuación equivale a ordenar por los criterios en su
+        secuencia: el primero decide y los siguientes desempatan.
+        """
+        keys = self._get_ranking_keys(tier)
+        score = 0
+        for criterion in criteria.filtered(lambda item: item.kind == "ranking"):
+            width = RANKING_WIDTHS[criterion.criterion_type]
+            score = score * width + min(keys[criterion.criterion_type], width - 1)
+        return score
 
     @api.depends("priority_score", "service_id.signup_ids.priority_score")
     def _compute_rank(self):

@@ -5,6 +5,7 @@ from . import police_employee
 from . import police_shift
 from . import police_schedule
 from . import service_catalog
+from . import priority_criterion
 from . import extra_service
 from . import extra_service_report
 from . import extra_settlement

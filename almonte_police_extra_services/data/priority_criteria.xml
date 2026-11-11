@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo noupdate="1">
+    <record id="criterion_exclude_no_schedule" model="almonte.police.priority.criterion">
+        <field name="criterion_type">exclude_no_schedule</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="criterion_exclude_absence" model="almonte.police.priority.criterion">
+        <field name="criterion_type">exclude_absence</field>
+        <field name="sequence">20</field>
+    </record>
+    <record
+        id="criterion_exclude_already_assigned"
+        model="almonte.police.priority.criterion"
+    >
+        <field name="criterion_type">exclude_already_assigned</field>
+        <field name="sequence">30</field>
+    </record>
+    <record
+        id="criterion_exclude_shift_restriction"
+        model="almonte.police.priority.criterion"
+    >
+        <field name="criterion_type">exclude_shift_restriction</field>
+        <field name="sequence">40</field>
+    </record>
+    <record id="criterion_exclude_shift_overlap" model="almonte.police.priority.criterion">
+        <field name="criterion_type">exclude_shift_overlap</field>
+        <field name="sequence">50</field>
+    </record>
+    <record id="criterion_rank_free" model="almonte.police.priority.criterion">
+        <field name="criterion_type">rank_free</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="criterion_rank_rest" model="almonte.police.priority.criterion">
+        <field name="criterion_type">rank_rest</field>
+        <field name="sequence">20</field>
+    </record>
+    <record
+        id="criterion_rank_quarter_services"
+        model="almonte.police.priority.criterion"
+    >
+        <field name="criterion_type">rank_quarter_services</field>
+        <field name="sequence">30</field>
+    </record>
+    <record id="criterion_rank_signup_order" model="almonte.police.priority.criterion">
+        <field name="criterion_type">rank_signup_order</field>
+        <field name="sequence">40</field>
+    </record>
+</odoo>

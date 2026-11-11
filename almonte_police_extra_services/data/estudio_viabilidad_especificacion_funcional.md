@@ -326,3 +326,23 @@ email de cada agente con el Ayuntamiento.
 - **Grupos 7 a 10** añadidos a los datos maestros.
 - **Acceso por DIP**: el usuario del agente usa el DIP como login y el botón
   *Regenerar contraseña* genera una clave temporal.
+
+## Criterios de prelación configurables (versión 19.0.1.9.0)
+
+El orden de adjudicación deja de estar fijado en el código. En
+*Configuración → Criterios de prelación* el responsable puede activar,
+desactivar y reordenar (arrastrando) los criterios del catálogo:
+
+- **Exclusiones** (descartan la inscripción): sin cuadrante, ausencia
+  incompatible, ya adjudicado en un servicio que coincide, restricción entre
+  turnos (p. ej. Noche → Mañana) y coincidencia con su propio turno. Al
+  desactivar una exclusión, el agente pasa a competir con el nivel que le
+  corresponda (libre o doblando turno).
+- **Orden** (deciden el puesto, el primero manda y los siguientes desempatan):
+  libre ese día, descanso mínimo previo, menos servicios en el trimestre y
+  orden de inscripción.
+
+El orden general se aplica a todos los tipos de servicio. Desde la pestaña
+*Prelación* de un tipo de servicio se puede crear un orden propio (copia del
+general) o volver al orden general. Cualquier cambio recalcula al momento las
+ofertas publicadas pendientes de adjudicar; las ya adjudicadas no se tocan.

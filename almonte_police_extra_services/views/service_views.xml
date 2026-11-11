@@ -26,7 +26,45 @@
                         <field name="currency_id" />
                         <field name="active" />
                     </group>
-                    <field name="notes" />
+                    <notebook>
+                        <page string="Observaciones" name="notes">
+                            <field name="notes" />
+                        </page>
+                        <page string="Prelación" name="priority">
+                            <div class="alert alert-info" role="alert" invisible="uses_custom_priority">
+                                Este tipo de servicio usa el orden de prelación general.
+                                <button
+                                    name="action_customize_priority"
+                                    type="object"
+                                    string="Personalizar prelación"
+                                    class="btn-link"
+                                    groups="almonte_police_extra_services.group_police_extra_manager"
+                                />
+                            </div>
+                            <field name="uses_custom_priority" invisible="1" />
+                            <field
+                                name="priority_criterion_ids"
+                                invisible="not uses_custom_priority"
+                            >
+                                <list editable="bottom" decoration-muted="not enabled">
+                                    <field name="sequence" widget="handle" />
+                                    <field name="kind" />
+                                    <field name="criterion_type" />
+                                    <field name="explanation" />
+                                    <field name="enabled" widget="boolean_toggle" />
+                                </list>
+                            </field>
+                            <button
+                                name="action_reset_priority"
+                                type="object"
+                                string="Volver al orden general"
+                                class="btn-secondary"
+                                invisible="not uses_custom_priority"
+                                groups="almonte_police_extra_services.group_police_extra_manager"
+                                confirm="Se eliminará el orden propio de este tipo de servicio. ¿Continuar?"
+                            />
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>
