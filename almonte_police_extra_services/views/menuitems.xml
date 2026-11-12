@@ -225,6 +225,14 @@
         groups="base.group_system,group_police_extra_agent,group_police_extra_user,group_police_extra_manager"
     />
     <menuitem
+        id="menu_police_services_available"
+        name="Servicios disponibles"
+        parent="menu_police_root"
+        action="action_extra_services_available"
+        groups="base.group_system,group_police_extra_agent,group_police_extra_user,group_police_extra_manager"
+        sequence="0"
+    />
+    <menuitem
         id="menu_services"
         name="Mis servicios"
         parent="menu_police_root"

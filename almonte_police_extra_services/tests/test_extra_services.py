@@ -990,7 +990,13 @@ class TestAlmontePoliceMenu(TransactionCase):
         top_menus = self.env["ir.ui.menu"].search([("parent_id", "=", root_menu.id)])
         self.assertEqual(
             set(top_menus.mapped("name")),
-            {"Mis servicios", "Gestión", "Informes", "Configuración"},
+            {
+                "Servicios disponibles",
+                "Mis servicios",
+                "Gestión",
+                "Informes",
+                "Configuración",
+            },
         )
 
     def test_services_menu_contains_only_agent_options(self):
@@ -1509,4 +1515,18 @@ class TestAlmontePoliceSettlement(TransactionCase):
         menu = self.env.ref("almonte_police_extra_services.menu_extra_settlements")
         self.assertEqual(
             menu.parent_id, self.env.ref("almonte_police_extra_services.menu_reports")
+        )
+
+
+class TestAlmontePoliceServicesMenu(TransactionCase):
+    def test_services_menu_is_first_under_police_root(self):
+        root = self.env.ref("almonte_police_extra_services.menu_police_root")
+        services_menu = self.env.ref(
+            "almonte_police_extra_services.menu_police_services_available"
+        )
+        siblings = root.child_id.sorted("sequence")
+        self.assertEqual(siblings[0], services_menu)
+        self.assertEqual(
+            services_menu.action,
+            self.env.ref("almonte_police_extra_services.action_extra_services_available"),
         )
